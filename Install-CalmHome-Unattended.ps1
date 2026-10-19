@@ -26,8 +26,7 @@ $script:Package = 'com.luisbadalo.calmhome'
 $script:Stock = 'com.google.android.tvlauncher'
 $script:Analytics = 'com.miui.tv.analytics'
 $script:HomeComponent = "$($script:Package)/.MainActivity"
-$expectedHash = 'C904CEE4AFE38284A0E94ADE2A0A218C89AC4AA0559B2054648A29E9C2F83C43'
-$script:Apps = 'com.hitv.explore,dev.fredol.open_tv,org.localsend.localsend_app,com.surfshark.vpnclient.android,tv.twitch.android.app,org.videolan.vlc'
+$expectedHash = 'A5F9826B19B0CC0A538247BCC9233148A7610A7A75ACC5DC7C71380B8D5F2B3B'
 if (-not $AdbPath) {
     foreach ($candidate in @('platform-tools\adb.exe','tools\platform-tools\adb.exe')) {
         $candidatePath = Join-Path $PSScriptRoot $candidate
@@ -104,6 +103,13 @@ function Wait-ForAuthorization {
     throw "Debugging authorization/connection timed out for $script:Target. No TV settings/apps changed. Keep the TV awake, check its IP and enable USB/network debugging in Developer options, then rerun and accept Allow on the TV. Do not reset ADB keys or revoke other authorizations. Last state: $lastState"
 }
 function Shell([string[]]$Arguments) { Adb -Arguments (@('shell')+$Arguments) }
+function Usage-AccessMode {
+    $text=Shell @('appops','get','--user','0',$script:Package,'GET_USAGE_STATS')
+    $match=[regex]::Match($text,'GET_USAGE_STATS:\s*(allow|ignore|deny|default|foreground)\b')
+    if ($match.Success) { return $match.Groups[1].Value }
+    if ($text -match 'No operations|No ops') { return 'default' }
+    throw "Cannot identify original Usage Access mode: $text"
+}
 function Save-Text([string]$Name,[string]$Value) { [IO.File]::WriteAllText((Join-Path $script:RunFolder $Name),$Value,[Text.UTF8Encoding]::new($false)) }
 function Packages([string]$Text) { @($Text -split '\r?\n' | Where-Object { $_ -match '^package:' } | ForEach-Object { (($_ -replace '^package:','') -split '=')[-1].Split(' ')[0] }) }
 function Actual-Home { $text=Shell @('cmd','package','resolve-activity','--brief','--user','0','-a','android.intent.action.MAIN','-c','android.intent.category.HOME'); $match=[regex]::Match($text,'(?m)^([\w.]+/[\w.]+)\s*$'); if (-not $match.Success) { throw "Cannot identify actual Home: $text" }; $match.Groups[1].Value }
@@ -160,7 +166,7 @@ function Check-UI {
             [void](Shell @('uiautomator','dump',$remote)); $raw=Shell @('cat',$remote)
             [xml]$xml=$raw; $nodes=@($xml.SelectNodes('//node'))
             $texts=@($nodes | ForEach-Object { $_.GetAttribute('text') })
-            if ($texts -contains 'Play Store' -and $texts -contains 'Settings' -and @($texts | Where-Object { $_ -match '^\d{1,2}:\d{2}$' }).Count -gt 0 -and @($nodes | Where-Object { $_.GetAttribute('clickable') -eq 'true' }).Count -ge 2) { Save-Text 'calm-home-ui.xml' $raw; return }
+            if ($texts -contains 'Play Store' -and $texts -contains 'Settings' -and $texts -contains 'All apps' -and @($texts | Where-Object { $_ -match '^\d{1,2}:\d{2}$' }).Count -gt 0 -and @($nodes | Where-Object { $_.GetAttribute('clickable') -eq 'true' }).Count -ge 3) { Save-Text 'calm-home-ui.xml' $raw; return }
         } catch { if ($attempt -eq 2) { throw "Cannot verify Calm Home UI; stock Home will not be disabled. $($_.Exception.Message)" } }
     }
     throw 'Calm Home clock/utility tiles could not be verified; stock Home will not be disabled.'
@@ -191,7 +197,7 @@ function Write-Undo {
     }
     $lines.Add(''); $lines.Add('## Individual original values / optional undo')
     foreach ($change in $script:Changes) { $lines.Add('- '+$change.Name+' ['+$change.Status+']: adb -s '+$script:Target+' '+($change.UndoArguments -join ' ')) }
-    $lines.Add(''); $lines.Add('Original sleep times were preserved and need no undo. Full original settings, package states, readable APKs and checksums are in this folder. These are not a full firmware/private-data backup. See journal.json for exact applied/skipped/failed state and verifications. Unattended setup did not install missing user apps.')
+    $lines.Add(''); $lines.Add('Original sleep times were preserved and need no undo. The app row is selected automatically from usage, not a fixed list. Revoke Usage Access using the recorded grant-usage-access undo command; without it, Calm Home falls back to local launch counts. Full original settings, package states, readable APKs and checksums are in this folder. These are not a full firmware/private-data backup. See journal.json for exact applied/skipped/failed state and verifications.')
     [IO.File]::WriteAllLines((Join-Path $script:RunFolder 'UNDO.md'),$lines,[Text.UTF8Encoding]::new($false))
 }
 function Recover-OnFailure {
@@ -205,6 +211,11 @@ function Recover-OnFailure {
             if ($change.Name -in @('window-animation','transition-animation','animator','screensaver')) {
                 try { [void](Adb $change.UndoArguments); $change.Status='rolled back after failure' } catch { $attempts.Add('Setting recovery failed: '+$change.Name) }
             }
+        }
+    }
+    foreach ($change in $script:Changes) {
+        if ($change.Name -eq 'grant-usage-access') {
+            try { [void](Adb $change.UndoArguments); $change.Status='rolled back after failure' } catch { $attempts.Add('Usage Access recovery failed: '+$_.Exception.Message) }
         }
     }
     $script:Journal.Recovery=$attempts
@@ -229,11 +240,13 @@ try {
     $inventory=@(foreach ($packageId in $packages) { $entry=$catalog[$packageId]; [pscustomobject]@{ Package=$packageId; Name=$(if($entry){$entry.Name}else{'Unidentified component; keep enabled'}); Category=$(if($entry){$entry.Category}else{'keep'}); Purpose=$(if($entry){$entry.Purpose}else{'Purpose not established; no automatic disable'}); OriginallyDisabled=($disabled -contains $packageId) } })
     $inventory | Export-Csv -LiteralPath (Join-Path $script:RunFolder 'inventory.csv') -NoTypeInformation -Encoding utf8
     $inventoryLines=@('# App inventory (candidates are not automatically disabled)','')
-    foreach ($category in @('optional','keep','use')) { $inventoryLines += "## $category"; foreach($item in @($inventory | Where-Object Category -eq $category | Sort-Object Name)) { $inventoryLines += '- '+$item.Name+' ('+$item.Package+'): '+$item.Purpose }; $inventoryLines += '' }
+    $categoryLabels=@{optional='Optional candidates to turn off (not automatically disabled)';keep='Needed by the TV or uncertain (keep enabled)';use='User-facing apps (catalog type, not measured usage)'}
+    foreach ($category in @('optional','keep','use')) { $inventoryLines += '## '+$categoryLabels[$category]; foreach($item in @($inventory | Where-Object Category -eq $category | Sort-Object Name)) { $inventoryLines += '- '+$item.Name+' ('+$item.Package+'): '+$item.Purpose }; $inventoryLines += '' }
     Save-Text 'APP-INVENTORY.md' ($inventoryLines -join "`n")
     foreach ($namespace in @('global','secure','system')) { Save-Text "settings-$namespace.txt" (Shell @('settings','list',$namespace)) }
     Save-Text 'package-details.txt' (Shell @('dumpsys','package')); Save-Text 'preferred-home.xml' (Shell @('dumpsys','package','preferred-xml'))
-    $script:Journal.MissingUserApps=@($script:Apps.Split(',') | Where-Object { $packages -notcontains $_ })
+    $script:Journal.AppSelection='Up to six launchable apps ranked by Android foreground time over the last 30 days; local launch counts and alphabetical fallback when history is unavailable.'
+    $script:Journal.UsageAccessOriginalMode=if ($packages -contains $script:Package) { Usage-AccessMode } else { 'default' }
     if ($PlanOnly) { $script:Journal.Status='plan only; no TV changes'; Save-Journal; Write-Undo; Write-Host "Read-only plan saved: $script:RunFolder"; return }
     Write-Host 'Saving readable APKs before changes...'
     $exports=[Collections.Generic.List[object]]::new()
@@ -251,12 +264,16 @@ try {
         $existingPath=(Shell @('pm','path',$script:Package)) -replace '^package:',''; if ($existingPath -match '\r|\n') { throw 'Unexpected split APK for Calm Home' }
         $existingLocal=Join-Path $script:RunFolder 'installed-calm-home.apk'; [void](Adb @('pull',$existingPath,$existingLocal))
         if ((Get-FileHash -LiteralPath $existingLocal -Algorithm SHA256).Hash -ne $expectedHash) { throw 'A different Calm Home build is already installed. It will not be overwritten automatically.' }
-        [void](Shell @('am','start','-n',$script:HomeComponent))
     } else {
         Apply-Change 'install-calm-home' @('install',$ApkPath) @('shell','pm','disable-user','--user','0',$script:Package) 'not installed'
         if ((Packages (Shell @('pm','list','packages','--user','0'))) -notcontains $script:Package) { throw 'Calm Home install verification failed' }
-        Apply-Change 'configure-app-list' @('shell','am','start','-n',$script:HomeComponent,'--es','apps',$script:Apps) @('shell','am','start','-n',$script:HomeComponent,'--es','apps','auto') 'fresh app; built-in list matches saved list'
     }
+    if ($script:Journal.UsageAccessOriginalMode -ne 'allow') {
+        Write-Host 'Enabling local Usage Access so Calm Home can select your most-used apps. The previous mode is recorded for undo.'
+        Apply-Change 'grant-usage-access' @('shell','appops','set','--user','0',$script:Package,'GET_USAGE_STATS','allow') @('shell','appops','set','--user','0',$script:Package,'GET_USAGE_STATS',$script:Journal.UsageAccessOriginalMode) $script:Journal.UsageAccessOriginalMode
+    }
+    if ((Usage-AccessMode) -ne 'allow') { throw 'Usage Access could not be enabled; Home will not be replaced.' }
+    [void](Shell @('am','start','-n',$script:HomeComponent))
     Check-UI; Screenshot 'trial-home'
     if ($packages -contains $script:Analytics -and $disabled -notcontains $script:Analytics) {
         Apply-Change 'disable-xiaomi-analytics' @('shell','pm','disable-user','--user','0',$script:Analytics) (Restore-StateArgs $script:Analytics $script:Journal.AnalyticsOriginalState) $script:Journal.AnalyticsOriginalState
@@ -294,6 +311,7 @@ try {
     foreach($key in @('Keyboard','Bluetooth','Hdmi','Accessibility','AccessibilityEnabled','ScreenOff','Sleep')) { if($after[$key] -ne $script:Before[$key]) { throw "Protected/original setting changed: $key" } }
     foreach($key in @('WindowAnimation','TransitionAnimation','Animator','Screensaver')) { if($after[$key] -ne '0') { throw "Setting did not persist: $key" } }
     if ($packages -contains $script:Analytics -and $afterDisabled -notcontains $script:Analytics) { throw 'Analytics disable did not persist' }
+    if ((Usage-AccessMode) -ne 'allow') { throw 'Usage Access did not persist after restart' }
     if (-not (Test-Home)) { throw 'Home did not persist after restart' }
     Check-UI; Screenshot 'final-home'
     $script:Journal.Status='complete; setup and persistence checks passed'; Save-Journal; Write-Undo

@@ -11,6 +11,10 @@ import android.graphics.drawable.Drawable;
 // Each icon is a list of ops: 0=moveTo x y, 1=lineTo x y, 2=close, 3=circle cx cy r.
 final class LineIcon extends Drawable {
     static final int[] PLAY = {0, 60, 45, 1, 60, 195, 1, 190, 120, 2};
+    static final int[] APPS = {0, 40, 40, 1, 90, 40, 1, 90, 90, 1, 40, 90, 2,
+            0, 150, 40, 1, 200, 40, 1, 200, 90, 1, 150, 90, 2,
+            0, 40, 150, 1, 90, 150, 1, 90, 200, 1, 40, 200, 2,
+            0, 150, 150, 1, 200, 150, 1, 200, 200, 1, 150, 200, 2};
     static final int[] HDMI = {0, 30, 90, 1, 210, 90, 1, 210, 130, 1, 185, 160, 1, 55, 160, 1, 30, 130, 2,
             0, 80, 120, 1, 160, 120};
     static final int[] SETTINGS = {0, 40, 70, 1, 140, 70, 0, 180, 70, 1, 200, 70, 0, 40, 170, 1, 60, 170,

@@ -12,7 +12,7 @@
   "com.amazon.amazonvideo.livingroom": {
     "Name": "Prime Video",
     "Category": "optional",
-    "Purpose": "Preinstalled Amazon streaming app; safe to disable if unused. Not selected for the new home screen; no disable approval given."
+    "Purpose": "Preinstalled Amazon streaming app; safe to disable if unused."
   },
   "com.android.backupconfirm": {
     "Name": "Backup confirmation",
@@ -282,7 +282,7 @@
   "com.google.android.play.games": {
     "Name": "Google Play Games",
     "Category": "keep",
-    "Purpose": "Game profiles and Google Play game features; keep under your Google Play protection rule. Not selected for the new home screen."
+    "Purpose": "Game profiles and Google Play game features; protected alongside other Google Play components."
   },
   "com.google.android.speech.pumpkin": {
     "Name": "Google speech parsing helper",
@@ -317,7 +317,7 @@
   "com.google.android.tv": {
     "Name": "Live Channels",
     "Category": "keep",
-    "Purpose": "TV-channel and input viewing support; protected under your TV-input rule."
+    "Purpose": "TV-channel and input viewing support; keep enabled."
   },
   "com.google.android.tv.bugreportsender": {
     "Name": "TV bug report sender",
@@ -347,7 +347,7 @@
   "com.google.android.videos": {
     "Name": "Google TV / Play Movies & TV",
     "Category": "optional",
-    "Purpose": "Preinstalled purchased/rented movie app; optional if unused. Not selected for the home screen; ask separately before any disable, including whether your Google Play protection covers this app."
+    "Purpose": "Preinstalled purchased/rented movie app; optional if unused."
   },
   "com.google.android.webview": {
     "Name": "Android System WebView",
@@ -357,12 +357,12 @@
   "com.google.android.youtube.tv": {
     "Name": "YouTube",
     "Category": "optional",
-    "Purpose": "Preinstalled video streaming app; safe to disable if unused. Not selected for the home screen; no disable approval given."
+    "Purpose": "Preinstalled video streaming app; safe to disable if unused."
   },
   "com.google.android.youtube.tvmusic": {
     "Name": "YouTube Music",
     "Category": "optional",
-    "Purpose": "Preinstalled music streaming app; safe to disable if unused. Not selected for the home screen; no disable approval given."
+    "Purpose": "Preinstalled music streaming app; safe to disable if unused."
   },
   "com.hitv.explore": {
     "Name": "File Manager",
@@ -402,7 +402,7 @@
   "com.netflix.ninja": {
     "Name": "Netflix",
     "Category": "optional",
-    "Purpose": "Preinstalled film/TV streaming app; safe to disable if unused. Not selected for the home screen; no disable approval given."
+    "Purpose": "Preinstalled film/TV streaming app; safe to disable if unused."
   },
   "com.surfshark.vpnclient.android": {
     "Name": "Surfshark VPN",
@@ -432,7 +432,7 @@
   "dev.fredol.open_tv": {
     "Name": "Fred TV (OpenTV package)",
     "Category": "use",
-    "Purpose": "Installed TV viewing app; APK label is Fred TV. Please confirm that you use it."
+    "Purpose": "TV viewing app; installed label is Fred TV. Its use is determined on the target TV."
   },
   "mitv.service": {
     "Name": "Xiaomi TV hardware service",

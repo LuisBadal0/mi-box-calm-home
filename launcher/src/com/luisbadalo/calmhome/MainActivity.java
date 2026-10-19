@@ -1,12 +1,15 @@
 package com.luisbadalo.calmhome;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.AppOpsManager;
+import android.app.usage.UsageStats;
+import android.app.usage.UsageStatsManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
@@ -19,6 +22,8 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
 import android.os.Bundle;
+import android.os.Process;
+import android.net.Uri;
 import android.provider.Settings;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -34,22 +39,26 @@ import android.widget.Toast;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class MainActivity extends Activity {
 
-    // Top-row apps, in this order of preference:
-    //  1. a list saved at install time:  am start -n com.luisbadalo.calmhome/.MainActivity --es apps "pkg1,pkg2"
-    //     (--es apps auto  goes back to 2)
-    //  2. apps.txt (built in as Apps.LIST), topped up with other TV apps installed on this TV.
-    // Missing apps are skipped, and only the first six are shown.
+    // No saved/built-in app list. Android usage determines the six top-row apps.
     private static final String PREFS = "config";
     private static final List<String> NOT_APPS = Arrays.asList("com.android.vending", "com.android.tv.settings",
-            "com.android.tv", "com.google.android.tvlauncher", "com.google.android.apps.tv.launcherx",
+            "com.android.tv", "com.google.android.tv", "com.droidlogic.tvinput", "com.droidlogic.tvsource",
+            "com.google.android.tvlauncher", "com.google.android.apps.tv.launcherx",
             "com.google.android.leanbacklauncher");
     private static final String PLAY_STORE = "com.android.vending";
     private static final String SETTINGS = "settings";
+    private static final String ALL_APPS = "all-apps";
     private static final int PER_ROW = 6;
+    private static final long HISTORY_MILLIS = 30L * 24 * 60 * 60 * 1000;
 
     // Layout is designed at 1920x1080 and scaled to the TV's real UI size by px().
     private static final int MARGIN = 96, GAP = 36, RADIUS = 22;
@@ -60,17 +69,19 @@ public class MainActivity extends Activity {
 
     private FrameLayout root;
     private final List<View> tiles = new ArrayList<>();
-    private boolean dirty = true;
+    private TextView rankingHint;
+    private boolean rankedByUsage;
     private String focusedKey;
 
     private final BroadcastReceiver packagesChanged = new BroadcastReceiver() {
-        @Override public void onReceive(Context c, Intent i) { dirty = true; }
+        @Override public void onReceive(Context c, Intent i) { if (root != null) buildTiles(); }
     };
 
     @Override
     protected void onCreate(Bundle state) {
         super.onCreate(state);
-        saveConfig(getIntent());
+        // Drop the old fixed-list preference when updating from version 1.
+        getSharedPreferences(PREFS, 0).edit().remove("apps").apply();
         loadFonts();
         scale = getResources().getDisplayMetrics().widthPixels / 1920f;
         getWindow().setBackgroundDrawable(background());
@@ -92,6 +103,8 @@ public class MainActivity extends Activity {
         // A match-parent date must not inherit the narrower clock's width when
         // localized weekday/month names are longer than the current digits.
         root.addView(clock, at(px(MARGIN), px(92), px(900), -2));
+        rankingHint = text(px(24), 0xA8FFFFFF, regular);
+        root.addView(rankingHint, at(px(MARGIN), px(340), px(1400), -2));
 
         setContentView(root);
 
@@ -114,51 +127,70 @@ public class MainActivity extends Activity {
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
-        if (saveConfig(intent)) buildTiles();
+        buildTiles();
     }
 
-    // Saves an app list passed with --es apps "...". Returns true if it changed.
-    private boolean saveConfig(Intent intent) {
-        String apps = intent == null ? null : intent.getStringExtra("apps");
-        if (apps == null) return false;
-        apps = apps.trim();
-        SharedPreferences.Editor e = getSharedPreferences(PREFS, 0).edit();
-        if (apps.isEmpty() || apps.equalsIgnoreCase("auto")) e.remove("apps");
-        else e.putString("apps", apps);
-        e.apply();
-        dirty = true;
-        return true;
+    private boolean hasUsageAccess() {
+        AppOpsManager ops = (AppOpsManager) getSystemService(APP_OPS_SERVICE);
+        try {
+            return ops != null && ops.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS,
+                    Process.myUid(), getPackageName()) == AppOpsManager.MODE_ALLOWED;
+        } catch (RuntimeException denied) { return false; }
+    }
+
+    private List<AppRanking.App> candidates(PackageManager pm) {
+        Set<String> excluded = new HashSet<>(NOT_APPS);
+        excluded.add(getPackageName());
+        for (ResolveInfo ri : pm.queryIntentActivities(new Intent(Intent.ACTION_MAIN)
+                .addCategory(Intent.CATEGORY_HOME), 0)) excluded.add(ri.activityInfo.packageName);
+
+        Map<String, AppRanking.App> apps = new HashMap<>();
+        for (String category : new String[] {Intent.CATEGORY_LEANBACK_LAUNCHER, Intent.CATEGORY_LAUNCHER}) {
+            for (ResolveInfo ri : pm.queryIntentActivities(new Intent(Intent.ACTION_MAIN).addCategory(category), 0)) {
+                String pkg = ri.activityInfo.packageName;
+                if (excluded.contains(pkg) || apps.containsKey(pkg)
+                        || !ri.activityInfo.applicationInfo.enabled || launchIntent(pm, pkg) == null) continue;
+                apps.put(pkg, new AppRanking.App(pkg, pm.getApplicationLabel(ri.activityInfo.applicationInfo).toString()));
+            }
+        }
+        return new ArrayList<>(apps.values());
     }
 
     private List<String> appList(PackageManager pm) {
-        List<String> out = new ArrayList<>();
-        String saved = getSharedPreferences(PREFS, 0).getString("apps", null);
-        String[] wanted = saved != null ? saved.split("[,\\s]+") : Apps.LIST;
-        for (String p : wanted) if (!p.isEmpty() && !out.contains(p) && launchIntent(pm, p) != null) out.add(p);
-        if (saved == null) {
-            // Top up with other TV apps people installed (or updated), skipping launchers and system tools.
-            Intent q = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LEANBACK_LAUNCHER);
-            for (ResolveInfo ri : pm.queryIntentActivities(q, 0)) {
-                if (out.size() >= PER_ROW) break;
-                String p = ri.activityInfo.packageName;
-                int flags = ri.activityInfo.applicationInfo.flags;
-                boolean stockSystem = (flags & ApplicationInfo.FLAG_SYSTEM) != 0
-                        && (flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) == 0;
-                if (stockSystem || out.contains(p) || NOT_APPS.contains(p) || p.equals(getPackageName())) continue;
-                out.add(p);
-            }
+        List<AppRanking.App> apps = candidates(pm);
+        Map<String, AppRanking.App> byPackage = new HashMap<>();
+        SharedPreferences prefs = getSharedPreferences(PREFS, 0);
+        for (AppRanking.App app : apps) {
+            byPackage.put(app.packageName, app);
+            app.launches = prefs.getLong("launches." + app.packageName, 0);
+            app.localLastUsed = prefs.getLong("last." + app.packageName, 0);
         }
-        return out.size() > PER_ROW ? out.subList(0, PER_ROW) : out;
+        rankedByUsage = hasUsageAccess();
+        if (rankedByUsage) {
+            try {
+                UsageStatsManager manager = (UsageStatsManager) getSystemService(USAGE_STATS_SERVICE);
+                long now = System.currentTimeMillis();
+                List<UsageStats> stats = manager == null ? null : manager.queryUsageStats(
+                        UsageStatsManager.INTERVAL_DAILY, now - HISTORY_MILLIS, now);
+                if (stats == null) rankedByUsage = false;
+                else for (UsageStats stat : stats) {
+                    AppRanking.App app = byPackage.get(stat.getPackageName());
+                    if (app == null) continue;
+                    app.foregroundMillis += Math.max(0, stat.getTotalTimeInForeground());
+                    app.lastUsed = Math.max(app.lastUsed, stat.getLastTimeUsed());
+                }
+            } catch (RuntimeException unavailable) { rankedByUsage = false; }
+        }
+        List<String> out = new ArrayList<>();
+        for (AppRanking.App app : AppRanking.top(apps, rankedByUsage, PER_ROW)) out.add(app.packageName);
+        return out;
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        // Rebuild only when apps were installed, removed or updated.
-        if (dirty) {
-            dirty = false;
-            buildTiles();
-        }
+        // Refresh usage and permissions whenever Home becomes visible again.
+        buildTiles();
         View f = getCurrentFocus();
         if (f == null && !tiles.isEmpty()) tiles.get(0).requestFocus();
     }
@@ -195,6 +227,7 @@ public class MainActivity extends Activity {
 
         int col = 0;
         List<String> apps = appList(pm);
+        rankingHint.setText(rankedByUsage ? "" : "For your most-used apps, enable Usage Access from All apps.");
         for (String pkg : apps) {
             Intent li = launchIntent(pm, pkg);
             if (li == null || col == PER_ROW) continue;
@@ -212,14 +245,17 @@ public class MainActivity extends Activity {
             col++;
         }
 
+        int appCount = col;
         col = 0;
         if (!apps.contains(PLAY_STORE) && launchIntent(pm, PLAY_STORE) != null)
             addTile(PLAY_STORE, "Play Store", null, LineIcon.PLAY, null, m + col++ * (w + g), top2, w, h);
         // This Mi Box is connected to a TV; do not expose TV-input shortcuts here.
         // Hiding these buttons does not change any Android HDMI/input service.
         addTile(SETTINGS, "Settings", null, LineIcon.SETTINGS, null, m + col * (w + g), top2, w, h);
+        col++;
+        addTile(ALL_APPS, "All apps", null, LineIcon.APPS, null, m + col * (w + g), top2, w, h);
 
-        linkFocus(apps.size());
+        linkFocus(appCount);
 
         View restore = null;
         for (View t : tiles) if (t.getTag().equals(focusedKey)) restore = t;
@@ -283,6 +319,7 @@ public class MainActivity extends Activity {
         card.setFocusable(true);
         card.setId(View.generateViewId());
         card.setTag(key);
+        card.setContentDescription(label);
 
         // Banner tiles show their name underneath when focused.
         final TextView caption = banner == null ? null : text(px(24), Color.WHITE, regular);
@@ -327,6 +364,7 @@ public class MainActivity extends Activity {
     }
 
     private void open(String key) {
+        if (ALL_APPS.equals(key)) { showAllApps(); return; }
         Intent i;
         if (SETTINGS.equals(key)) {
             i = new Intent(Settings.ACTION_SETTINGS);
@@ -335,10 +373,50 @@ public class MainActivity extends Activity {
             if (i == null) return;
         }
         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        try { startActivity(i); }
+        try {
+            startActivity(i);
+            if (!SETTINGS.equals(key) && !PLAY_STORE.equals(key)) {
+                SharedPreferences prefs = getSharedPreferences(PREFS, 0);
+                long previous = prefs.getLong("launches." + key, 0);
+                prefs.edit().putLong("launches." + key, previous == Long.MAX_VALUE ? previous : previous + 1)
+                        .putLong("last." + key, System.currentTimeMillis()).apply();
+            }
+        }
         catch (Exception ignored) {
             Toast.makeText(this, "Unable to open this app. Check Android Settings.", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void showAllApps() {
+        List<AppRanking.App> apps = candidates(getPackageManager());
+        Collections.sort(apps, (a, b) -> {
+            int label = a.label.compareToIgnoreCase(b.label);
+            return label != 0 ? label : a.packageName.compareTo(b.packageName);
+        });
+        String[] labels = new String[apps.size()];
+        for (int i = 0; i < labels.length; i++) labels[i] = apps.get(i).label;
+        new AlertDialog.Builder(this).setTitle("All apps")
+                .setItems(labels, (dialog, which) -> open(apps.get(which).packageName))
+                .setNeutralButton("Usage access", (dialog, which) -> showUsageAccess())
+                .setNegativeButton("Close", null).show();
+    }
+
+    private void showUsageAccess() {
+        new AlertDialog.Builder(this).setTitle("Show your most-used apps")
+                .setMessage("Usage Access lets Calm Home rank apps by time used on this TV over the last 30 days. "
+                        + "Nothing is sent online. You can revoke this access in Android Settings. "
+                        + "Without it, the row uses launches from Calm Home, then alphabetical order when there is no history.")
+                .setPositiveButton("Open settings", (dialog, which) -> {
+                    Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS,
+                            Uri.parse("package:" + getPackageName()));
+                    try { startActivity(intent); }
+                    catch (RuntimeException missingDetail) {
+                        try { startActivity(new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)); }
+                        catch (RuntimeException unavailable) {
+                            Toast.makeText(this, "This TV needs the computer setup installer to enable Usage Access.", Toast.LENGTH_LONG).show();
+                        }
+                    }
+                }).setNegativeButton("Cancel", null).show();
     }
 
     private static Intent launchIntent(PackageManager pm, String pkg) {

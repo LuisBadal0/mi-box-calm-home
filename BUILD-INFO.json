@@ -1,28 +1,30 @@
 {
   "package": "com.luisbadalo.calmhome",
   "label": "Calm Home",
-  "versionName": "1.0-local",
-  "versionCode": 1,
+  "versionName": "1.1-most-used",
+  "versionCode": 2,
   "minSdk": 21,
   "targetSdk": 34,
-  "SHA256": "C904CEE4AFE38284A0E94ADE2A0A218C89AC4AA0559B2054648A29E9C2F83C43",
+  "SHA256": "A5F9826B19B0CC0A538247BCC9233148A7610A7A75ACC5DC7C71380B8D5F2B3B",
   "upstream": "https://github.com/Ansub/tv-detox",
   "upstreamCommit": "4cdbf068c76d7bc5b5adc070c42b8f924cabcc0d",
-  "customizations": [
-    "upper-left live clock/date with Portuguese date width fix",
-    "fixed dark orange-to-dark background",
-    "six user-app banners",
-    "Play Store and Settings utility tiles",
-    "no HDMI shortcuts or focus animations",
-    "separate local package ID"
+  "appSelection": {
+    "requestedHistoryDays": 30,
+    "metric": "Android daily total foreground time",
+    "refresh": "Home resume and package changes",
+    "eligible": "Launchable installed/preinstalled apps, excluding Home launchers and utility/input packages",
+    "limit": 6,
+    "fallback": "Local successful launch counts, local recency, app label, package ID",
+    "historyLimit": "Android may retain less than 30 days and daily buckets can overlap the boundary"
+  },
+  "permissions": [
+    "android.permission.PACKAGE_USAGE_STATS"
   ],
-  "testedDevice": "Xiaomi MIBOX4 Android 9/API 28; new-box verification still required",
-  "apps": [
-    "com.hitv.explore",
-    "dev.fredol.open_tv",
-    "org.localsend.localsend_app",
-    "com.surfshark.vpnclient.android",
-    "tv.twitch.android.app",
-    "org.videolan.vlc"
-  ]
+  "networkPermission": false,
+  "utilityButtons": [
+    "Play Store",
+    "Settings",
+    "All apps"
+  ],
+  "validation": "Built/signature/alignment checked and ranking/installer paths checked locally; new ranking/Usage Access flow not yet tried on a physical TV"
 }

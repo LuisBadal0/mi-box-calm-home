@@ -1,64 +1,60 @@
-# Automatic setup — no confirmation prompts
+# Automatic setup
 
-This optional mode implements the user's request to repeat the successful setup **without asking for approval at every step**. Running the installer authorizes only the fixed actions below on the explicitly supplied new-box IP. The original guided workflow is still available in FRESH-BOX-SETUP.md; its per-step confirmation instructions do not apply inside this deliberately chosen automatic mode.
+This mode performs the fixed scope below without asking for approval before each change. Use [FRESH-BOX-SETUP.md](FRESH-BOX-SETUP.md) for individual approvals. Supported target: **MIBOX4, Android 9 / API 28, user 0** on a private LAN IPv4 address.
 
-## Run it
+## Start
 
-Extract the whole kit on Windows. Use **PowerShell 7** (`pwsh`). Place Google's official `platform-tools` folder beside the kit files, or provide its adb.exe path. Keep the TV awake and select its HDMI input before running. The installer connects, prints the authorization instructions, and waits up to **3 minutes** for you to accept the TV's debugging dialog. It continues automatically once authorized; no need to rerun just because the first connection was unauthorized. Already trusted connections continue immediately. Android can also display a Play Protect installation prompt. This script cannot bypass Android authorization or protection screens.
-
-Replace the IP with the **new** box's IP, then run from the kit folder:
+Extract this repository, install PowerShell 7, and extract Google's official `platform-tools` beside the installer. Enable USB/network debugging on the TV and keep it awake on its HDMI input. Replace the example IP:
 
 ```powershell
 pwsh -NoProfile -File .\Install-CalmHome-Unattended.ps1 -TvIp 192.168.1.20
 ```
 
-There are no confirmation questions in this command. The IP above is an example, not a preset target. The script accepts only private LAN IPv4 addresses and supports only the tested **MIBOX4 / Android 9 (API 28) / user 0**. It stops, rather than guessing, on unsupported devices or conflicting existing configurations. Do not run it against the first box merely to prepare another one.
+The installer connects and waits up to 180 seconds for authorization. On the TV, select **Always allow from this computer > Allow** in **Allow USB debugging?**. Android uses that dialog for this Wi-Fi ADB connection too. Trusted connections continue immediately. Add `-AuthorizationWaitSeconds 300` for five minutes; range 1-900 seconds.
 
-To also close Wi-Fi ADB automatically **after** all setup/persistence checks succeed:
+No dialog? Open Settings > Device Preferences > Developer options, toggle USB debugging off/on and enable network debugging if there is a separate option. Menu names vary. Confirm the IP and same local network. Debugging previously closed by setup must be re-enabled on the TV. A different computer/debugging key needs its own approval. The installer does not revoke authorizations, replace keys, kill the shared ADB server or bypass Android/Play Protect prompts. An authorization timeout stops before app/settings changes.
+
+Optional commands:
 
 ```powershell
+# Inventory and settings snapshots only; no APK export/install/grant/reboot.
+pwsh -NoProfile -File .\Install-CalmHome-Unattended.ps1 -TvIp 192.168.1.20 -PlanOnly
+
+# Close Wi-Fi ADB after successful setup/persistence checks.
 pwsh -NoProfile -File .\Install-CalmHome-Unattended.ps1 -TvIp 192.168.1.20 -CloseWifiDebugging
 ```
 
-That switches ADB to USB mode and checks that the wireless TCP endpoint is no longer reachable. It does not revoke other computers' debugging authorizations or switch off USB debugging. Calm Home keeps working; wireless management requires re-enabling network debugging on the TV later. Without this flag, debugging is left available and noted in the report.
+`-AdbPath`, `-ApkPath`, `-BackupRoot` and `-Port` can override locations/port. The APK must match the exact SHA-256 in BUILD-INFO.json and the installer. The included APK is at `calm-home.apk`.
 
-### What to select on the TV
+## Authorized scope
 
-When **Allow USB debugging?** appears, select **Always allow from this computer**, then **Allow**, using the TV remote. The dialog can say USB even though this connection uses Wi-Fi. Android requires physical acceptance of its authorization dialog: [official Android debugging documentation](https://developer.android.com/studio/run/device).
+1. Check the model/API/current user, original Home, protected packages and original settings. Stop on Projectivy, unexpected Home, unsupported models or a different existing Calm Home build.
+2. Create a separate journal, original settings/package snapshots, English app inventory and initial memory reading. Unknown apps are kept enabled. Save readable installed APKs and their checksums/error records before setup changes; this can take several minutes.
+3. Install version **1.1-most-used** (`com.luisbadalo.calmhome`) if absent. Skip installation when the same reviewed build is already enabled.
+4. Enable **Usage Access** for Calm Home using `appops set --user 0 com.luisbadalo.calmhome GET_USAGE_STATS allow`, unless already allowed. Record the original mode and exact undo command. This is the only new special access; accessibility/device-admin are not granted. Verify the mode before replacing Home.
+5. Open Calm Home and verify the real foreground, clock, Play Store, Settings and All apps; save a screenshot. There is no app list to configure.
+6. Disable only exact Xiaomi analytics (`com.miui.tv.analytics`) if present/enabled.
+7. Select Calm Home as preferred and test the real Home button from Settings. Only if the confirmed competing app is `com.google.android.tvlauncher`, disable that launcher while keeping it installed, then test again. Do not disable other Home/setup/input services.
+8. Set the three animation scales and screensaver to 0, skipping values already 0. Preserve original sleep/screen-off times, keyboard, Bluetooth, HDMI, accessibility and protected Google services.
+9. Record RAM immediately before restart; restart only if setup changes occurred. Confirm a new completed boot, preserve original packages/protected settings, confirm Usage Access and Home work, save a final screenshot and record RAM afterward. A matching fully configured rerun skips settings changes and restart.
+10. Write per-box `journal.json`, `UNDO.md`, `APP-INVENTORY.md`, CSV, settings snapshots, readable APK backups and screenshots under `tv-backup/`.
 
-If no dialog appears and the console says unauthorized, open **Settings > Device Preferences > Developer options**, toggle **USB debugging** off/on, and enable network debugging if the box has a separate option. Return to the TV screen; the installer keeps checking. Menu names can vary. Do not revoke all authorizations or delete computer keys. If debugging was closed by an earlier setup, enable it again on the TV before connecting. A command run yourself may use a different debugging key from the earlier Codex session and therefore need a fresh approval.
+## Automatic app selection
 
-To allow more time, append `-AuthorizationWaitSeconds 300` (five minutes; default 180, supported range 1–900). If it times out, it stops before installing apps or changing TV settings, with instructions to retry. These are instructions for the tested Android 9 box; newer Android wireless-pairing workflows are outside this kit's supported scope.
+The row contains up to six launchable apps, ranked by Android-reported foreground time for the requested last 30 days. Installed and preinstalled apps are eligible; Home launchers, Play Store, Settings and TV-input tools are excluded. Recent usage breaks duration ties. Android may retain fewer days or include edges of daily buckets. It is a local ranking, not exact screen-time accounting.
 
-For an optional read-only plan, without installing, disabling, configuring or restarting anything:
+The row refreshes on return Home and package changes. All apps remains available for opening anything outside the row. With no recorded usage, local launches then alphabetical order fill the row. Without Usage Access, only launches from Calm Home can influence ranking. No missing apps are downloaded, accounts copied or VPN permissions granted.
 
-```powershell
-pwsh -NoProfile -File .\Install-CalmHome-Unattended.ps1 -TvIp 192.168.1.20 -PlanOnly
-```
+Usage Access reveals app-use metadata to Calm Home. It has no Internet permission, uploads nothing and runs no tracking service. Restore the original app-op mode with the per-box undo command to revoke the new access. A later automatic setup invocation will enable it again because that is part of this mode's stated scope.
 
-In the original project, files are found automatically under tools/platform-tools and tv-detox/out. Elsewhere use `-AdbPath C:\path\to\adb.exe -ApkPath C:\path\to\calm-home.apk`. The reviewed APK checksum must match; automatic mode will not replace it with a download or rebuild.
+## Failure and undo
 
-## What it does automatically
+Unexpected errors stop setup and are recorded. If the box originally used stock Google Home and setup fails, recovery attempts to restore that launcher's original enabled state/preference and open it, then restore animation/screensaver values changed by the run. Any Usage Access grant is restored to its original mode. Calm Home stays installed and Xiaomi analytics stays disabled. Recovery cannot finish while the box is unreachable; inspect the journal and use its undo instructions after reconnecting.
 
-1. Confirms the device model, API/current user, current Home and protected components. Creates a new per-box timestamped journal, settings/package-state baseline, English app inventory and memory reading. Unknown apps are marked uncertain and kept enabled.
-2. Copies readable installed APKs to that box's backup folder and records SHA-256/error details. It does not request interactive private-data backups, copy accounts, root, flash or promise a full firmware recovery image.
-3. Installs only the reviewed Calm Home APK, or skips it if the same build is already installed/enabled. A different existing APK or disabled Calm Home stops automatic mode. Existing Projectivy also stops this fresh-box workflow; it is not silently migrated or uninstalled.
-4. Opens the app with the six selected banners on a new installation. Already-existing Calm Home preferences are preserved. Missing user apps are reported and skipped; their APKs/accounts/VPN permissions are not installed or granted automatically.
-5. Verifies the real foreground app, clock, Play Store and Settings through Android's UI hierarchy and saves a screenshot before attempting to replace Home.
-6. Disables Xiaomi analytics if that exact package exists and is not already disabled. No other optional apps are disabled.
-7. Selects Calm Home as preferred and tests Home from Android Settings. Only if the confirmed competing app is `com.google.android.tvlauncher`, it disables that launcher, keeping it installed, and retests. It does not disable other HOME candidates or setup/input services.
-8. Turns off the three animation scales and screensaver, skipping settings already at 0. Preserves the box's original sleep/screen-off values, accessibility configuration, keyboard, Bluetooth and HDMI state.
-9. Records RAM immediately before reboot, reboots when persistent setup changes were made, confirms a new completed boot, and verifies Home/packages/protected settings and RAM afterward. A rerun of an already-completed setup skips persistent changes and the unnecessary reboot.
-10. Saves `journal.json`, `APP-INVENTORY.md`, `inventory.csv`, APK backups, screenshots, memory readings and **per-box UNDO.md** under `tv-backup/unattended-<IP>-<timestamp>/`. Optional debugging closure runs only after verification.
+Re-enable/open/verify the original Home before disabling Calm Home. Keep each box's own originals. Backups are not firmware, account or private app-data recovery images. No uninstall, data clear, root, flash, certificate or accessibility/admin grant is included.
 
-## Failure and rollback
+With `-CloseWifiDebugging`, the installer switches ADB to USB mode after all checks succeed and checks the wireless port is closed. USB debugging and previous authorizations are not revoked. Re-enable debugging on the TV for later network management.
 
-Unexpected cases stop and write the exact error. If a Home switch fails on a box originally using stock Google Home, the installer attempts to restore that launcher's original enabled state, preferred entry and screen, and reverts animation/screensaver settings it changed. It keeps Calm Home installed and keeps Xiaomi analytics disabled. Recovery cannot complete if the box/network is unreachable; use the recorded per-box undo when access returns.
+Version 1.1 was built and signature/alignment checked, and its ranking/installer paths were checked locally. The new ranking/Usage Access flow has not yet been exercised on a physical TV. No tests or device logs are included in this repository.
 
-No uninstall, app-data clearing, accessibility/admin grant, root, certificate installation or broad package-disabling command is included. Review the script if you want to change its scope. Do not apply the first box's original settings/undo log to a new box.
-
-The mode has offline mock tests for read-only planning, normal setup/reboot, skip-on-rerun, failed-Home rollback, unsupported-device refusal, authorization waiting and authorization timeout. A real second MIBOX4 setup was completed on 19 October 2026: Wi-Fi ADB dropped during backup and again during post-reboot verification. After reconnecting, separate checks confirmed the completed setup and wireless port closure. The new authorization-wait behavior is tested with the offline adapter; physical network/debugging/Play Protect behavior still depends on the device.
-
-## Agent prompt without confirmations
-
-Use REPLICATE-NO-PROMPTS.md, supplying the new IP. That prompt explicitly authorizes this fixed workflow and asks the agent to report a blocker rather than invent broader changes or repeatedly ask for confirmations.
+For an agent prompt that authorizes this same scope, use [REPLICATE-NO-PROMPTS.md](REPLICATE-NO-PROMPTS.md).

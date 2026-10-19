@@ -1,19 +1,18 @@
-# Copy-and-paste automatic setup prompt
+# Automatic agent prompt
 
-Fill in the new IP and open Codex in the extracted kit/project folder. This is an explicit alternative to the approval-at-every-step prompt.
+Fill in the target IP and open this repository folder:
 
 ```text
-Set up a different fresh Xiaomi MIBOX4 running Android 9 using my reviewed Calm Home / tv-detox kit.
+Set up my Xiaomi MIBOX4 running Android 9 using this reviewed Calm Home repository.
+New target IP: [NEW_BOX_IP]
 
-New box IP: [NEW_BOX_IP]
+Use AUTOMATIC-SETUP.md and Install-CalmHome-Unattended.ps1. I authorize its documented automatic scope on this explicit target without asking for confirmation before each step. Verify model MIBOX4, API 28, user 0 and APK SHA-256 A5F9826B19B0CC0A538247BCC9233148A7610A7A75ACC5DC7C71380B8D5F2B3B. Use version 1.1-most-used (versionCode 2); do not substitute an unreviewed APK or guess around an unexpected configuration.
 
-Use AUTOMATIC-SETUP.md and Install-CalmHome-Unattended.ps1. I authorize its documented fixed setup scope on this new target without asking for confirmation before each step. Do not run it against my already-configured box unless I explicitly identify that box as the target.
+Run the installer with -CloseWifiDebugging. Walk me through the TV's initial debugging authorization and wait for acceptance; do not bypass Android/Play Protect. Skip completed steps.
 
-Verify the supplied APK SHA-256 is C904CEE4AFE38284A0E94ADE2A0A218C89AC4AA0559B2054648A29E9C2F83C43. Use the reviewed local build; do not substitute a GitHub latest-release APK. Confirm model MIBOX4, Android API 28 and user 0 before mutations. If the IP/artifacts are missing, identify that blocker. If the device/configuration is unexpected, stop and report it instead of guessing or expanding scope.
+Within this scope: make a per-box inventory/settings/readable-APK backup and undo journal; install/open the reviewed launcher; enable only its GET_USAGE_STATS Usage Access and record the original app-op mode; let it rank up to six launchable apps automatically by Android-reported foreground time over the requested last 30 days. Keep the orange-to-dark clock design, Play Store, Settings and All apps. Do not pass a fixed app list. Explain the local-launch/alphabetical fallback if history/access is unavailable. The permission reads usage metadata locally; the app has no Internet permission.
 
-Run the automatic installer for the supplied IP with -CloseWifiDebugging. Do not add interactive approval prompts or automatic-yes flags to upstream scripts. If Android itself needs initial debugging authorization or blocks installation, tell me exactly what to tap; do not bypass its protections.
+Disable exact Xiaomi analytics if verified, and stock Google Home only if needed after UI/Home checks. Turn off animations/screensaver; preserve original sleep times, Play/services/keyboard/Bluetooth/HDMI/accessibility. Restart when changes were made and verify persistence/Usage Access with RAM before/after. Finally close wireless ADB after all checks succeed.
 
-Within this authorization: create the new per-box inventory/backups/undo journal; install/open the reviewed launcher; keep the six-app orange-to-dark clock design plus Play Store/Settings; disable only verified Xiaomi analytics and, if necessary after UI verification, the specific stock Google home app; turn off animations/screensaver; preserve original sleep times and protected Play/keyboard/Bluetooth/HDMI/accessibility services; restart and verify with RAM before/after; finally close wireless ADB after checks succeed.
-
-Skip completed steps. Report missing user apps without installing them or copying accounts. Never uninstall, clear data, root, flash, grant accessibility/admin access, disable setup/input services or bulk-debloat. If the Home switch fails, use the script's recorded original-Home recovery. Finish with results, missing items and the per-box backup/undo paths. No other TV changes are authorized by this prompt.
+Never uninstall, clear data, root, flash, grant accessibility/admin access, bulk-disable or install unrelated apps/copy accounts. On failure, record it and use the documented original-Home/setting/Usage Access recovery, keeping analytics disabled. Report blockers rather than expanding scope. Finish with results and the per-box backup/undo paths.
 ```

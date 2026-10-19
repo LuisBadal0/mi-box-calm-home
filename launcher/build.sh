@@ -2,7 +2,6 @@
 # Builds out/calm-home.apk. Needs Java 17 and the Android SDK (platform 34, build-tools 34).
 #   macOS:  brew install openjdk@17 && brew install --cask android-commandlinetools
 #           sdkmanager "platforms;android-34" "build-tools;34.0.0"
-# Use a different app list with: APPS=my-apps.txt sh build.sh
 set -e
 cd "$(dirname "$0")"
 
@@ -13,19 +12,11 @@ SDK=${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}
 BT=$SDK/build-tools/34.0.0; JAR=$SDK/platforms/android-34/android.jar
 [ -f "$JAR" ] && [ -d "$BT" ] || { echo "Android SDK not found. Set ANDROID_HOME, and install platforms;android-34 and build-tools;34.0.0." >&2; exit 1; }
 
-rm -rf out; mkdir -p out/classes out/dex out/gen/com/luisbadalo/calmhome
-
-# Turn the app list into Apps.java.
-{
-  echo "package com.luisbadalo.calmhome;"
-  echo "final class Apps { static final String[] LIST = {"
-  grep -v '^[[:space:]]*#' "${APPS:-apps.txt}" | tr -d ' \t\r' | grep -v '^$' | sed 's/.*/    "&",/'
-  echo "}; }"
-} > out/gen/com/luisbadalo/calmhome/Apps.java
+mkdir -p out/classes out/dex
 
 "$BT/aapt2" link -o out/base.apk -I "$JAR" --manifest AndroidManifest.xml --min-sdk-version 21 --target-sdk-version 34
 javac -nowarn -Xlint:-options -source 1.8 -target 1.8 -bootclasspath "$JAR:$BT/core-lambda-stubs.jar" \
-  -d out/classes $(find src out/gen -name "*.java")
+  -d out/classes $(find src -name "*.java")
 "$BT/d8" --min-api 21 --release --lib "$JAR" --output out/dex $(find out/classes -name '*.class')
 cp out/base.apk out/unsigned.apk; (cd out/dex && zip -q ../unsigned.apk classes.dex)
 "$BT/zipalign" -f 4 out/unsigned.apk out/aligned.apk
