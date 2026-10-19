@@ -1,0 +1,467 @@
+{
+  "android": {
+    "Name": "Android system",
+    "Category": "keep",
+    "Purpose": "Core operating system."
+  },
+  "android.autoinstalls.config.xioami.mibox3": {
+    "Name": "Xiaomi device configuration",
+    "Category": "keep",
+    "Purpose": "Manufacturer setup configuration; keep for compatibility."
+  },
+  "com.amazon.amazonvideo.livingroom": {
+    "Name": "Prime Video",
+    "Category": "optional",
+    "Purpose": "Preinstalled Amazon streaming app; safe to disable if unused. Not selected for the new home screen; no disable approval given."
+  },
+  "com.android.backupconfirm": {
+    "Name": "Backup confirmation",
+    "Category": "keep",
+    "Purpose": "Handles Android backup and restore confirmation."
+  },
+  "com.android.bluetooth": {
+    "Name": "Bluetooth",
+    "Category": "keep",
+    "Purpose": "Connects the remote and Bluetooth accessories; protected."
+  },
+  "com.android.camera2": {
+    "Name": "Camera",
+    "Category": "optional",
+    "Purpose": "Optional camera app; only disable if you do not use a USB camera."
+  },
+  "com.android.captiveportallogin": {
+    "Name": "Wi-Fi sign-in page",
+    "Category": "keep",
+    "Purpose": "Lets you sign in to networks with a login page."
+  },
+  "com.android.certinstaller": {
+    "Name": "Certificate installer",
+    "Category": "keep",
+    "Purpose": "Installs security certificates used by networks and apps."
+  },
+  "com.android.companiondevicemanager": {
+    "Name": "Accessory pairing helper",
+    "Category": "keep",
+    "Purpose": "Supports companion-device pairing; preserve remote/accessory support."
+  },
+  "com.android.cts.ctsshim": {
+    "Name": "Android compatibility test helper",
+    "Category": "keep",
+    "Purpose": "Small system compatibility component; little likely performance benefit from disabling."
+  },
+  "com.android.cts.priv.ctsshim": {
+    "Name": "Privileged compatibility test helper",
+    "Category": "keep",
+    "Purpose": "Small system compatibility component; keep for compatibility."
+  },
+  "com.android.defcontainer": {
+    "Name": "App installation helper",
+    "Category": "keep",
+    "Purpose": "Helps Android access installation packages."
+  },
+  "com.android.dreams.basic": {
+    "Name": "Basic screensavers",
+    "Category": "optional",
+    "Purpose": "Optional built-in color screensavers; prefer changing the screensaver setting rather than disabling the package."
+  },
+  "com.android.externalstorage": {
+    "Name": "External storage access",
+    "Category": "keep",
+    "Purpose": "Lets apps access USB drives and shared files."
+  },
+  "com.android.htmlviewer": {
+    "Name": "HTML document viewer",
+    "Category": "keep",
+    "Purpose": "Opens local web-format documents and may be called by other apps."
+  },
+  "com.android.inputdevices": {
+    "Name": "Remote and input-device support",
+    "Category": "keep",
+    "Purpose": "System support for input devices; protected."
+  },
+  "com.android.keychain": {
+    "Name": "Security key storage",
+    "Category": "keep",
+    "Purpose": "Handles certificates and security keys."
+  },
+  "com.android.location.fused": {
+    "Name": "Location service",
+    "Category": "keep",
+    "Purpose": "Provides location to apps and system services."
+  },
+  "com.android.onetimeinitializer": {
+    "Name": "Android first-run setup helper",
+    "Category": "keep",
+    "Purpose": "System setup component; leave available for recovery/setup."
+  },
+  "com.android.pacprocessor": {
+    "Name": "Network proxy configuration",
+    "Category": "keep",
+    "Purpose": "Processes automatic network proxy settings."
+  },
+  "com.android.printspooler": {
+    "Name": "Printing service",
+    "Category": "optional",
+    "Purpose": "Optional print queue; only disable if you do not print from this box."
+  },
+  "com.android.providers.calendar": {
+    "Name": "Calendar data storage",
+    "Category": "keep",
+    "Purpose": "Shared calendar database; keep to avoid breaking app integrations."
+  },
+  "com.android.providers.contacts": {
+    "Name": "Contacts data storage",
+    "Category": "keep",
+    "Purpose": "Shared contacts/account data; keep for app compatibility."
+  },
+  "com.android.providers.downloads": {
+    "Name": "Download manager",
+    "Category": "keep",
+    "Purpose": "Downloads files and app content; protected dependency."
+  },
+  "com.android.providers.media": {
+    "Name": "Media library",
+    "Category": "keep",
+    "Purpose": "Indexes video, music, photos, and shared media files."
+  },
+  "com.android.providers.settings": {
+    "Name": "System settings storage",
+    "Category": "keep",
+    "Purpose": "Stores device settings; protected."
+  },
+  "com.android.providers.tv": {
+    "Name": "TV channels and input data",
+    "Category": "keep",
+    "Purpose": "Stores TV channel/input information; protected."
+  },
+  "com.android.providers.userdictionary": {
+    "Name": "Keyboard dictionary",
+    "Category": "keep",
+    "Purpose": "Stores custom words used by the keyboard; protected."
+  },
+  "com.android.proxyhandler": {
+    "Name": "Network proxy helper",
+    "Category": "keep",
+    "Purpose": "Handles network proxy connections."
+  },
+  "com.android.se": {
+    "Name": "Secure element service",
+    "Category": "keep",
+    "Purpose": "System security component; keep for compatibility."
+  },
+  "com.android.settings.intelligence": {
+    "Name": "Settings search helper",
+    "Category": "keep",
+    "Purpose": "Supports the Settings interface."
+  },
+  "com.android.sharedstoragebackup": {
+    "Name": "Shared-file backup helper",
+    "Category": "keep",
+    "Purpose": "Android backup support."
+  },
+  "com.android.shell": {
+    "Name": "ADB command service",
+    "Category": "keep",
+    "Purpose": "Needed for our connection and rollback commands; protected."
+  },
+  "com.android.statementservice": {
+    "Name": "App and website association verifier",
+    "Category": "keep",
+    "Purpose": "Checks app/site associations used to open links."
+  },
+  "com.android.systemui": {
+    "Name": "System interface",
+    "Category": "keep",
+    "Purpose": "System panels, status indicators, and navigation; protected."
+  },
+  "com.android.tv.settings": {
+    "Name": "TV Settings",
+    "Category": "keep",
+    "Purpose": "The TV settings app; protected."
+  },
+  "com.android.vending": {
+    "Name": "Google Play Store",
+    "Category": "keep",
+    "Purpose": "Installs and updates apps; protected."
+  },
+  "com.android.vpndialogs": {
+    "Name": "VPN permission dialogs",
+    "Category": "keep",
+    "Purpose": "Needed to authorize VPN connections such as Surfshark."
+  },
+  "com.android.wallpaperbackup": {
+    "Name": "Wallpaper backup helper",
+    "Category": "keep",
+    "Purpose": "System backup support; little likely performance benefit from disabling."
+  },
+  "com.droidlogic": {
+    "Name": "Amlogic hardware resources",
+    "Category": "keep",
+    "Purpose": "Vendor hardware component; exact APK is not readable over this ADB connection. Keep protected."
+  },
+  "com.droidlogic.ble": {
+    "Name": "Bluetooth hardware configuration",
+    "Category": "keep",
+    "Purpose": "Vendor Bluetooth configuration; protected."
+  },
+  "com.droidlogic.overlay": {
+    "Name": "Amlogic device configuration",
+    "Category": "keep",
+    "Purpose": "Vendor hardware configuration; protected."
+  },
+  "com.google.android.apps.mediashell": {
+    "Name": "Google Cast",
+    "Category": "keep",
+    "Purpose": "Receives casting from phones and other devices; keep until your usage is confirmed."
+  },
+  "com.google.android.backdrop": {
+    "Name": "Google photo screensaver",
+    "Category": "optional",
+    "Purpose": "Optional photo/ambient screensaver; prefer changing its setting rather than disabling the package."
+  },
+  "com.google.android.backuptransport": {
+    "Name": "Google backup service",
+    "Category": "keep",
+    "Purpose": "Supports Google account/device backup."
+  },
+  "com.google.android.ext.services": {
+    "Name": "Android services library",
+    "Category": "keep",
+    "Purpose": "Shared Android functionality used by other apps."
+  },
+  "com.google.android.ext.shared": {
+    "Name": "Android shared library",
+    "Category": "keep",
+    "Purpose": "Shared Android code used by system services."
+  },
+  "com.google.android.feedback": {
+    "Name": "Google feedback reports",
+    "Category": "optional",
+    "Purpose": "Optional feedback and diagnostic reporting; disabling removes that reporting feature."
+  },
+  "com.google.android.gms": {
+    "Name": "Google Play services",
+    "Category": "keep",
+    "Purpose": "Google account, app, and service dependencies; protected."
+  },
+  "com.google.android.gsf": {
+    "Name": "Google Services Framework",
+    "Category": "keep",
+    "Purpose": "Google account and service infrastructure; protected."
+  },
+  "com.google.android.inputmethod.latin": {
+    "Name": "Google keyboard (Gboard)",
+    "Category": "keep",
+    "Purpose": "The active on-screen keyboard; protected."
+  },
+  "com.google.android.katniss": {
+    "Name": "Google search and voice assistant",
+    "Category": "keep",
+    "Purpose": "Voice search/assistant support, including the remote microphone button."
+  },
+  "com.google.android.marvin.talkback": {
+    "Name": "Android Accessibility Suite",
+    "Category": "keep",
+    "Purpose": "Screen reader and accessibility support; keep available."
+  },
+  "com.google.android.onetimeinitializer": {
+    "Name": "Google first-run setup helper",
+    "Category": "keep",
+    "Purpose": "Google system setup support."
+  },
+  "com.google.android.packageinstaller": {
+    "Name": "App installer and permission interface",
+    "Category": "keep",
+    "Purpose": "Installs apps and handles permission requests; protected."
+  },
+  "com.google.android.partnersetup": {
+    "Name": "Google manufacturer setup helper",
+    "Category": "keep",
+    "Purpose": "Google/manufacturer integration support."
+  },
+  "com.google.android.play.games": {
+    "Name": "Google Play Games",
+    "Category": "keep",
+    "Purpose": "Game profiles and Google Play game features; keep under your Google Play protection rule. Not selected for the new home screen."
+  },
+  "com.google.android.speech.pumpkin": {
+    "Name": "Google speech parsing helper",
+    "Category": "keep",
+    "Purpose": "Supports Google voice-command processing."
+  },
+  "com.google.android.sss.authbridge": {
+    "Name": "Google sign-in bridge",
+    "Category": "keep",
+    "Purpose": "Google authentication component; protected dependency."
+  },
+  "com.google.android.syncadapters.calendar": {
+    "Name": "Google Calendar sync",
+    "Category": "optional",
+    "Purpose": "Optional calendar synchronization; only disable if calendar integration is unused."
+  },
+  "com.google.android.syncadapters.contacts": {
+    "Name": "Google Contacts sync",
+    "Category": "optional",
+    "Purpose": "Optional contacts synchronization; only disable if contacts integration is unused."
+  },
+  "com.google.android.tts": {
+    "Name": "Google text-to-speech",
+    "Category": "keep",
+    "Purpose": "Spoken output used by accessibility and other apps."
+  },
+  "com.google.android.tungsten.setupwraith": {
+    "Name": "Android TV setup wizard",
+    "Category": "keep",
+    "Purpose": "Initial TV setup and account configuration."
+  },
+  "com.google.android.tv": {
+    "Name": "Live Channels",
+    "Category": "keep",
+    "Purpose": "TV-channel and input viewing support; protected under your TV-input rule."
+  },
+  "com.google.android.tv.bugreportsender": {
+    "Name": "TV bug report sender",
+    "Category": "optional",
+    "Purpose": "Optional diagnostic report uploader."
+  },
+  "com.google.android.tv.frameworkpackagestubs": {
+    "Name": "Google TV system placeholders",
+    "Category": "keep",
+    "Purpose": "System compatibility placeholders; keep for compatibility."
+  },
+  "com.google.android.tv.remote.service": {
+    "Name": "Android TV remote service",
+    "Category": "keep",
+    "Purpose": "Phone/remote control support; protected."
+  },
+  "com.google.android.tvlauncher": {
+    "Name": "Current Android TV home screen",
+    "Category": "keep",
+    "Purpose": "The current default home screen; retain as the fallback launcher."
+  },
+  "com.google.android.tvrecommendations": {
+    "Name": "Android TV Core Services",
+    "Category": "keep",
+    "Purpose": "Includes recommendation services; its installed label indicates broader TV services, so keep until dependencies are verified. A replacement home screen can omit recommendations without disabling it."
+  },
+  "com.google.android.videos": {
+    "Name": "Google TV / Play Movies & TV",
+    "Category": "optional",
+    "Purpose": "Preinstalled purchased/rented movie app; optional if unused. Not selected for the home screen; ask separately before any disable, including whether your Google Play protection covers this app."
+  },
+  "com.google.android.webview": {
+    "Name": "Android System WebView",
+    "Category": "keep",
+    "Purpose": "Displays web content inside apps and sign-in pages; protected dependency."
+  },
+  "com.google.android.youtube.tv": {
+    "Name": "YouTube",
+    "Category": "optional",
+    "Purpose": "Preinstalled video streaming app; safe to disable if unused. Not selected for the home screen; no disable approval given."
+  },
+  "com.google.android.youtube.tvmusic": {
+    "Name": "YouTube Music",
+    "Category": "optional",
+    "Purpose": "Preinstalled music streaming app; safe to disable if unused. Not selected for the home screen; no disable approval given."
+  },
+  "com.hitv.explore": {
+    "Name": "File Manager",
+    "Category": "use",
+    "Purpose": "Browse local and USB files."
+  },
+  "com.mitv.download.service": {
+    "Name": "Xiaomi download service",
+    "Category": "keep",
+    "Purpose": "Manufacturer download integration; keep until dependencies are established."
+  },
+  "com.mitv.milinkservice": {
+    "Name": "Xiaomi MiLink service",
+    "Category": "keep",
+    "Purpose": "Manufacturer device/media integration; keep to preserve uncertain remote/input dependencies."
+  },
+  "com.mitv.tvhome.atv": {
+    "Name": "Xiaomi PatchWall",
+    "Category": "optional",
+    "Purpose": "Optional Xiaomi content home screen; defer disabling until the chosen home screen is tested."
+  },
+  "com.mitv.tvhome.michannel": {
+    "Name": "Xiaomi TV channel component",
+    "Category": "keep",
+    "Purpose": "Manufacturer channel/content integration; dependencies are not yet established, so keep."
+  },
+  "com.mitv.videoplayer": {
+    "Name": "Xiaomi system video player",
+    "Category": "keep",
+    "Purpose": "Built-in playback used by manufacturer components."
+  },
+  "com.miui.tv.analytics": {
+    "Name": "Xiaomi TV analytics",
+    "Category": "optional",
+    "Purpose": "Optional manufacturer usage/diagnostic analytics; first suggested disable candidate."
+  },
+  "com.netflix.ninja": {
+    "Name": "Netflix",
+    "Category": "optional",
+    "Purpose": "Preinstalled film/TV streaming app; safe to disable if unused. Not selected for the home screen; no disable approval given."
+  },
+  "com.surfshark.vpnclient.android": {
+    "Name": "Surfshark VPN",
+    "Category": "use",
+    "Purpose": "VPN app."
+  },
+  "com.xiaomi.android.tvsetup.partnercustomizer": {
+    "Name": "Xiaomi setup customization",
+    "Category": "keep",
+    "Purpose": "Manufacturer TV setup integration."
+  },
+  "com.xiaomi.mitv.res": {
+    "Name": "Xiaomi TV resources",
+    "Category": "keep",
+    "Purpose": "Shared manufacturer interface/resources."
+  },
+  "com.xiaomi.mitv.updateservice": {
+    "Name": "Xiaomi PatchWall update service",
+    "Category": "keep",
+    "Purpose": "Updates Xiaomi PatchWall components; retain while dependencies are reviewed."
+  },
+  "com.xm.webcontent": {
+    "Name": "Xiaomi WebContent",
+    "Category": "keep",
+    "Purpose": "Manufacturer web-content component; dependencies are uncertain, so keep."
+  },
+  "dev.fredol.open_tv": {
+    "Name": "Fred TV (OpenTV package)",
+    "Category": "use",
+    "Purpose": "Installed TV viewing app; APK label is Fred TV. Please confirm that you use it."
+  },
+  "mitv.service": {
+    "Name": "Xiaomi TV hardware service",
+    "Category": "keep",
+    "Purpose": "Manufacturer TV service sharing the system identity; protected."
+  },
+  "org.localsend.localsend_app": {
+    "Name": "LocalSend",
+    "Category": "use",
+    "Purpose": "Transfers files between devices on your network."
+  },
+  "org.videolan.vlc": {
+    "Name": "VLC",
+    "Category": "use",
+    "Purpose": "Video and music player."
+  },
+  "tv.alphonso.alphonso_eula": {
+    "Name": "Alphonso Recommendations",
+    "Category": "optional",
+    "Purpose": "Optional third-party recommendations component; disabling removes its recommendation feature."
+  },
+  "tv.twitch.android.app": {
+    "Name": "Twitch",
+    "Category": "use",
+    "Purpose": "Live-stream viewing app."
+  },
+  "com.luisbadalo.calmhome": {
+    "Name": "Calm Home",
+    "Category": "use",
+    "Purpose": "Reviewed custom tv-detox home screen; not a core system service."
+  }
+}

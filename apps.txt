@@ -1,0 +1,9 @@
+# The apps on the top row of your home screen, in order. One package name per line.
+# Apps that aren't installed are skipped, and only the first six are shown.
+# Not sure of a package name? Ask Claude: "What's the package name of <app> on my TV?"
+com.hitv.explore
+dev.fredol.open_tv
+org.localsend.localsend_app
+com.surfshark.vpnclient.android
+tv.twitch.android.app
+org.videolan.vlc

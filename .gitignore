@@ -1,0 +1,29 @@
+# Local TV data and debugging credentials
+tv-backup/
+tools/
+platform-tools/
+private-adb-profile/
+.android/
+**/adbkey*
+**/*.jks
+**/*.keystore
+**/*.ab
+**/*.pem
+**/*.p12
+.env
+.env.*
+
+# Generated build files; keep the reviewed root calm-home.apk
+launcher/out/
+__pycache__/
+*.pyc
+*.log
+.DS_Store
+Thumbs.db
+
+# Tests are intentionally excluded from this distribution
+tests/
+**/tests/
+ci/
+**/ci/
+TEST-RESULTS.md
