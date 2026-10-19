@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" role="img" aria-labelledby="title description">
+  <title id="title">Calm Home design preview</title>
+  <desc id="description">Dark orange-to-black home screen with a large clock, six illustrative app tiles and Play Store, Settings and All apps buttons. The real app selects the top row from usage.</desc>
+  <defs>
+    <linearGradient id="background" x2="1" y2="1">
+      <stop stop-color="#20140e"/>
+      <stop offset=".5" stop-color="#100b08"/>
+      <stop offset="1" stop-color="#050505"/>
+    </linearGradient>
+    <radialGradient id="warm" cx=".03" cy=".02" r=".82">
+      <stop stop-color="#6c3419" stop-opacity=".34"/>
+      <stop offset="1" stop-color="#6c3419" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="movies" x2="1" y2="1"><stop stop-color="#7f2741"/><stop offset="1" stop-color="#401425"/></linearGradient>
+    <linearGradient id="video" x2="1" y2="1"><stop stop-color="#175895"/><stop offset="1" stop-color="#103055"/></linearGradient>
+    <linearGradient id="music" x2="1" y2="1"><stop stop-color="#246355"/><stop offset="1" stop-color="#12372d"/></linearGradient>
+    <linearGradient id="tv" x2="1" y2="1"><stop stop-color="#6650a5"/><stop offset="1" stop-color="#30244f"/></linearGradient>
+    <linearGradient id="player" x2="1" y2="1"><stop stop-color="#aa5526"/><stop offset="1" stop-color="#613018"/></linearGradient>
+    <linearGradient id="files" x2="1" y2="1"><stop stop-color="#3d485a"/><stop offset="1" stop-color="#202735"/></linearGradient>
+    <filter id="shadow" x="-.3" y="-.3" width="1.6" height="1.8"><feDropShadow dy="12" stdDeviation="14" flood-opacity=".35"/></filter>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#background)"/>
+  <rect width="1920" height="1080" fill="url(#warm)"/>
+  <g fill="#fff" font-family="Arial, Helvetica, sans-serif">
+    <text x="96" y="123" font-size="30" fill-opacity=".66">Monday, 19 October</text>
+    <text x="88" y="284" font-size="176" font-weight="600" letter-spacing="-5">10:28</text>
+    <g transform="translate(88 600)" filter="url(#shadow)">
+      <rect width="274" height="154" rx="23" fill="url(#movies)"/>
+      <g transform="translate(30 49)" fill="none" stroke="#fff" stroke-width="4" stroke-linejoin="round">
+        <rect width="48" height="40" y="8" rx="5"/>
+        <path d="M0 21h48M11 8l9 13M29 8l9 13"/>
+      </g>
+      <text x="99" y="88" font-size="32" font-weight="600">Movies</text>
+    </g>
+    <g transform="translate(390 604)">
+      <rect width="258" height="145" rx="22" fill="url(#video)"/>
+      <path d="M35 46v54l44-27z" fill="#fff"/>
+      <text x="102" y="84" font-size="32" font-weight="600">Video</text>
+    </g>
+    <g transform="translate(684 604)">
+      <rect width="258" height="145" rx="22" fill="url(#music)"/>
+      <path d="M65 84V43l36-7v40M65 56l36-7" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+      <ellipse cx="54" cy="88" rx="13" ry="10" fill="#fff"/>
+      <ellipse cx="90" cy="80" rx="13" ry="10" fill="#fff"/>
+      <text x="122" y="84" font-size="32" font-weight="600">Music</text>
+    </g>
+    <g transform="translate(978 604)">
+      <rect width="258" height="145" rx="22" fill="url(#tv)"/>
+      <g fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="38" y="47" width="62" height="43" rx="6"/>
+        <path d="M57 103h24M69 90v13M58 35l11 12 13-12"/>
+      </g>
+      <text x="132" y="84" font-size="32" font-weight="600">TV</text>
+    </g>
+    <g transform="translate(1272 604)">
+      <rect width="258" height="145" rx="22" fill="url(#player)"/>
+      <circle cx="65" cy="73" r="28" fill="none" stroke="#fff" stroke-width="4"/>
+      <path d="M58 58v30l24-15z" fill="#fff"/>
+      <text x="116" y="84" font-size="32" font-weight="600">Player</text>
+    </g>
+    <g transform="translate(1566 604)">
+      <rect width="258" height="145" rx="22" fill="url(#files)"/>
+      <path d="M34 51a5 5 0 0 1 5-5h18l10 11h32v41H34z" fill="#fff"/>
+      <text x="123" y="84" font-size="32" font-weight="600">Files</text>
+    </g>
+    <text x="225" y="800" text-anchor="middle" font-size="24">Movies</text>
+    <g fill="#fff" fill-opacity=".075" stroke="#fff" stroke-opacity=".09" stroke-width="2">
+      <rect x="96" y="828" width="258" height="145" rx="22"/>
+      <rect x="390" y="828" width="258" height="145" rx="22"/>
+      <rect x="684" y="828" width="258" height="145" rx="22"/>
+    </g>
+    <g fill="none" stroke="#fff" stroke-opacity=".92" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M214 866v30l26-15z"/>
+      <path d="M501 873h20m8 0h10M501 893h4m8 0h26"/>
+      <circle cx="525" cy="873" r="4"/>
+      <circle cx="509" cy="893" r="4"/>
+      <rect x="796" y="864" width="12" height="12" rx="1"/>
+      <rect x="818" y="864" width="12" height="12" rx="1"/>
+      <rect x="796" y="886" width="12" height="12" rx="1"/>
+      <rect x="818" y="886" width="12" height="12" rx="1"/>
+    </g>
+    <g font-size="24" text-anchor="middle" fill-opacity=".88">
+      <text x="225" y="939">Play Store</text>
+      <text x="519" y="939">Settings</text>
+      <text x="813" y="939">All apps</text>
+    </g>
+  </g>
+</svg>

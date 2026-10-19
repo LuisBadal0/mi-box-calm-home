@@ -4,6 +4,10 @@ A minimal Android TV home screen based on [Ansub/tv-detox](https://github.com/An
 
 The top row automatically shows **up to six most-used apps**. A large live clock/date and dark orange-to-black background keep the screen simple. Play Store, Settings and All apps stay available underneath. There are no ads, sponsored recommendations or HDMI shortcuts.
 
+![Calm Home design preview with a clock, six example app tiles, Play Store, Settings and All apps](docs/home-screen.svg)
+
+*Design preview. The example app tiles illustrate the layout; your apps are selected from your usage.*
+
 ## How apps are selected
 
 With **Usage Access**, Calm Home reads Android's daily app-usage statistics for the last 30 days and sorts launchable apps by total foreground time. Ties use most recent usage, local launch history, then app name. Android can retain less history or include the boundary of a daily bucket; the result reflects the history the TV provides.
