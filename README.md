@@ -8,6 +8,31 @@ The top row automatically shows **up to six most-used apps**. A large live clock
 
 *Design preview. The example app tiles illustrate the layout; your apps are selected from your usage.*
 
+## Set up with Claude Code or Codex
+
+Open this repository in a local **Claude Code** or **Codex** session that can run Windows PowerShell and reach your TV on the same network. Replace `[TV_IP]` below, then paste the prompt. This authorizes the documented automatic setup without approval before each change; Android's debugging authorization still needs a tap on the TV. For individual approvals, use the [guided prompt](REPLICATE-PROMPT.md) instead.
+
+```text
+Help me set up Calm Home on my Xiaomi MIBOX4 running Android 9.
+TV IP: [TV_IP]
+Repository: https://github.com/LuisBadal0/mi-box-calm-home
+
+Read README.md, AUTOMATIC-SETUP.md and Install-CalmHome-Unattended.ps1 first. Use the included calm-home.apk; verify its SHA-256 against BUILD-INFO.json and the installer. Confirm the target is MIBOX4, Android API 28, user 0 before making changes. Stop on a mismatch or unexpected existing configuration instead of guessing or substituting an APK.
+
+Help me enable developer/USB/network debugging if necessary. Use Google's official Android Platform Tools and Windows PowerShell 7. Tell me exactly what to select on the TV, and wait for me to accept "Allow USB debugging?" before proceeding. Do not bypass Android authorization or Play Protect.
+
+I authorize the documented automatic setup on this target without asking before each step. Run:
+pwsh -NoProfile -File .\Install-CalmHome-Unattended.ps1 -TvIp [TV_IP] -CloseWifiDebugging
+
+Create this box's own app inventory, original-settings/readable-APK backups and undo journal before changes. Install/open the reviewed launcher and enable only its Usage Access, recording the original mode for undo. Let it automatically show up to six most-used launchable apps using Android foreground-time history for the requested last 30 days. Keep the clock, orange-to-dark design, Play Store, Settings and All apps. Explain the local-launch/alphabetical fallback if usage history is unavailable; do not pass a fixed app list.
+
+Disable only verified Xiaomi analytics and, if necessary after testing Home, the specific stock Google Home launcher. Keep both installed. Turn off animations and screensaver, preserve the TV's original sleep times, and protect Google Play/services, keyboard, Bluetooth, HDMI and accessibility settings. Never uninstall, clear data, root, flash, bulk-disable, grant accessibility/admin access or transfer accounts.
+
+Skip completed steps. Restart when changes were made, verify Home and protected settings afterward, and show available/unused RAM before and after. Close Wi-Fi debugging only after all checks pass. If setup fails, stop, record the error and use the documented recovery without expanding scope. Finish with the results, backup limitations, and this box's report/UNDO.md paths.
+```
+
+The longer [automatic prompt](REPLICATE-NO-PROMPTS.md) and [setup guide](AUTOMATIC-SETUP.md) describe the same scope.
+
 ## How apps are selected
 
 With **Usage Access**, Calm Home reads Android's daily app-usage statistics for the last 30 days and sorts launchable apps by total foreground time. Ties use most recent usage, local launch history, then app name. Android can retain less history or include the boundary of a daily bucket; the result reflects the history the TV provides.
