@@ -107,7 +107,7 @@ The installer will not overwrite a different existing Calm Home APK automaticall
 
 Rebuilding needs Java 17 and Android SDK platform 34 / build-tools 34.0.0. On Windows set `JAVA_HOME` and `ANDROID_HOME`, then run `pwsh -NoProfile -File .\launcher\Build-Windows.ps1`. On macOS/Linux, also install `zip`, then run `cd launcher` and `sh build.sh`.
 
-The build creates `launcher/out/calm-home.apk` and creates a local signing key if missing. Generated development keys use the password `local-build-only`; Windows supports `CALM_HOME_KEY_PASSWORD` and shell builds support `KEYSTORE_PASS` to override it. Keep signing keys private and preserve the same key for updates. Rebuilt APKs need their own review and checksum update in the installer/docs before automatic deployment. A new signing key cannot update the included APK in place. Windows installation of the included APK needs no Java/build tools.
+The build creates `launcher/out/calm-home.apk` and creates a local signing key if missing. A new key gets a random password saved beside it as `calmhome-local.password`, which Git ignores. Keys created by earlier builds keep the old development password `local-build-only`. Windows supports `CALM_HOME_KEY_PASSWORD` and shell builds support `KEYSTORE_PASS` to supply a password instead. Keep signing keys private and preserve the same key for updates. Rebuilt APKs need their own review and checksum update in the installer/docs before automatic deployment. A new signing key cannot update the included APK in place. Windows installation of the included APK needs no Java/build tools.
 
 ## License
 

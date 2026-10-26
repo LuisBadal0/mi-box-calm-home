@@ -21,9 +21,18 @@ javac -encoding UTF-8 -nowarn -Xlint:-options -source 1.8 -target 1.8 -bootclass
 cp out/base.apk out/unsigned.apk; (cd out/dex && zip -q ../unsigned.apk classes.dex)
 "$BT/zipalign" -f 4 out/unsigned.apk out/aligned.apk
 
-# A signing key is made on first build. Keep key.jks: updates must be signed with the same key.
-# (Releases are signed with their own key: set KEYSTORE and KEYSTORE_PASS.)
-KS=${KEYSTORE:-calmhome-local.jks}; PASS=${KEYSTORE_PASS:-local-build-only}
+# A signing key is made on first build. Keep it: updates must be signed with the same key.
+# A new key gets a random password saved beside it (never committed). Set KEYSTORE and
+# KEYSTORE_PASS to use another key. Keys made before this change keep the old default password.
+KS=${KEYSTORE:-calmhome-local.jks}; PASS_FILE=${KS%.jks}.password
+if [ -n "$KEYSTORE_PASS" ]; then PASS=$KEYSTORE_PASS
+elif [ -f "$PASS_FILE" ]; then PASS=$(cat "$PASS_FILE")
+elif [ -f "$KS" ]; then PASS=local-build-only
+  echo "Warning: $KS has no $PASS_FILE; using the legacy development password." >&2
+else PASS=$(od -An -N24 -tx1 /dev/urandom | tr -d ' \n')
+  (umask 077; printf '%s\n' "$PASS" > "$PASS_FILE")
+  echo "Created a random signing password in $PASS_FILE. Keep it private with $KS." >&2
+fi
 [ -f "$KS" ] || keytool -genkeypair -keystore "$KS" -storepass "$PASS" -keypass "$PASS" -alias tvhome \
   -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=tvhome" >/dev/null 2>&1
 "$BT/apksigner" sign --ks "$KS" --ks-pass "pass:$PASS" --out out/calm-home.apk out/aligned.apk

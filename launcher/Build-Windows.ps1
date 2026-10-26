@@ -10,7 +10,24 @@ $ErrorActionPreference = 'Stop'
 if (-not $AndroidSdkPath) { $AndroidSdkPath = $env:ANDROID_SDK_ROOT }
 if (-not $AndroidSdkPath -or -not $JavaHomePath) { throw 'Set ANDROID_HOME and JAVA_HOME (Java 17), or supply -AndroidSdkPath and -JavaHomePath.' }
 if (-not $BuildToolsPath) { $BuildToolsPath = Join-Path $AndroidSdkPath 'build-tools\34.0.0' }
-if (-not $SigningKeyPassword) { $SigningKeyPassword = 'local-build-only' }
+# A new key gets a random password saved beside it (ignored by Git). Keys made before
+# this change keep the legacy development password unless one is supplied.
+$passwordFile = [IO.Path]::ChangeExtension($SigningKeyPath, '.password')
+if (-not $SigningKeyPassword) {
+    if (Test-Path -LiteralPath $passwordFile) {
+        $SigningKeyPassword = (Get-Content -LiteralPath $passwordFile -Raw).Trim()
+    } elseif (Test-Path -LiteralPath $SigningKeyPath) {
+        $SigningKeyPassword = 'local-build-only'
+        Write-Warning "$SigningKeyPath has no password file; using the legacy development password."
+    } else {
+        $bytes = [byte[]]::new(24)
+        $rng = [Security.Cryptography.RandomNumberGenerator]::Create()
+        try { $rng.GetBytes($bytes) } finally { $rng.Dispose() }
+        $SigningKeyPassword = -join ($bytes | ForEach-Object { $_.ToString('x2') })
+        [IO.File]::WriteAllText($passwordFile, $SigningKeyPassword + "`n", [Text.UTF8Encoding]::new($false))
+        Write-Output "Created a random signing password in $passwordFile. Keep it private with the key."
+    }
+}
 $androidJar = Join-Path $AndroidSdkPath 'platforms\android-34\android.jar'
 foreach ($required in @((Join-Path $JavaHomePath 'bin\javac.exe'),(Join-Path $BuildToolsPath 'aapt2.exe'),$androidJar)) {
     if (-not (Test-Path -LiteralPath $required)) { throw "Missing build dependency: $required" }
