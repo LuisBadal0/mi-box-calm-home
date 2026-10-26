@@ -95,13 +95,13 @@ Each run writes to `tv-backup/unattended-<IP>-<timestamp>/`. Keep its **UNDO.md*
 
 Backups contain settings, package state and readable APKs, not firmware or private app/account data. Vendor APKs can be unreadable. Network interruptions can stop setup or recovery. Inspect the recorded error and actual TV state before retrying. If wireless debugging was closed, enable it on the TV again before remote management.
 
-The installer will not overwrite a different existing Calm Home APK automatically. To update your own older build deliberately, follow the guided guide's upgrade section. Version 1.1 ignores/removes the old saved fixed-app-list preference; Android usage now determines the row. No TV has been updated merely by publishing this repository.
+The installer will not overwrite a different existing Calm Home APK automatically. To update your own older build deliberately, follow the guided guide's upgrade section. Since version 1.1 the old saved fixed-app-list preference is removed. Version 1.2 starts in the automatic most-used mode after an update; switch to your own apps on the TV with Choose apps. No TV has been updated merely by publishing this repository.
 
 ## APK and source
 
 - Package: `com.luisbadalo.calmhome`
-- Version: **1.1-most-used**, versionCode **2**
-- SHA-256: `A5F9826B19B0CC0A538247BCC9233148A7610A7A75ACC5DC7C71380B8D5F2B3B`
+- Version: **1.2-choose-apps**, versionCode **3**
+- SHA-256: `93AC9375760F9E6BE9D990343FA500614725FE5994C6EAA9A36034C004C65ABD`
 - Source: [launcher/](launcher/); release notes: [CHANGELOG.md](CHANGELOG.md)
 - Upstream: Ansub/tv-detox at `4cdbf068c76d7bc5b5adc070c42b8f924cabcc0d`
 

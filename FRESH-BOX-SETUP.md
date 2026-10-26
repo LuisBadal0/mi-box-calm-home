@@ -2,10 +2,10 @@
 
 This guide asks before each TV change. For the explicitly chosen no-confirmation mode, use [AUTOMATIC-SETUP.md](AUTOMATIC-SETUP.md). The automatic installer supports **MIBOX4 / Android 9 / API 28 / user 0**; do not infer support for a different box.
 
-Use the repository's **Calm Home 1.1-most-used**, package `com.luisbadalo.calmhome`, versionCode 2. Expected APK SHA-256:
+Use the repository's **Calm Home 1.2-choose-apps**, package `com.luisbadalo.calmhome`, versionCode 3. Expected APK SHA-256:
 
 ```text
-A5F9826B19B0CC0A538247BCC9233148A7610A7A75ACC5DC7C71380B8D5F2B3B
+93AC9375760F9E6BE9D990343FA500614725FE5994C6EAA9A36034C004C65ABD
 ```
 
 The UI has a clock/date, dark orange-to-black background, a row of up to six apps, and separate Play Store, Settings, All apps and Choose apps buttons. The row starts with the six most-used apps; **Choose apps** lets the viewer switch to up to six installed apps they pick on the TV. Labels follow the TV's language (Portuguese or English). No apps.txt or build-time app list is used. Usage Access reads Android app-use metadata for ranking; there is no Internet permission or accessibility service.
@@ -21,7 +21,7 @@ $adb = (Resolve-Path .\platform-tools\adb.exe).Path
 $apk = (Resolve-Path .\calm-home.apk).Path
 $tv = '<NEW_BOX_IP>:5555'
 if ($tv.Contains('<')) { throw 'Set the new box IP first.' }
-if ((Get-FileHash -Algorithm SHA256 -LiteralPath $apk).Hash -ne 'A5F9826B19B0CC0A538247BCC9233148A7610A7A75ACC5DC7C71380B8D5F2B3B') { throw 'Unexpected APK; stop.' }
+if ((Get-FileHash -Algorithm SHA256 -LiteralPath $apk).Hash -ne '93AC9375760F9E6BE9D990343FA500614725FE5994C6EAA9A36034C004C65ABD') { throw 'Unexpected APK; stop.' }
 & $adb connect $tv
 & $adb -s $tv get-state
 ```
@@ -111,4 +111,4 @@ Save screenshots, final report and per-box undo. Finally offer to close Wi-Fi de
 
 Restore/re-enable the original Home using its own recorded component/enabled state, open and verify it, then optionally disable Calm Home. Keep apps installed. Restore Usage Access's original app-op mode, animations/screensaver originals and any other documented change. During a launcher-only rollback, keep Xiaomi analytics disabled. Debugging may need to be re-enabled on the TV first.
 
-The automatic installer stops on a different existing Calm Home APK. For a deliberate update from the previously supplied version 1.0, first back up its APK/state and approve the change, verify the new APK hash, then use `adb -s <target> install -r <path-to-new-apk>`. This preserves app data and requires the same signing certificate. Version 1.1 drops the saved fixed-list preference and ignores old `--es apps` extras. Grant Usage Access as above, then open/test the new UI. A release APK downgrade may be blocked by Android; do not promise a simple old-APK reinstall, uninstall or clear data to force rollback. Stop for review if installation/signatures or recovery are unexpected.
+The automatic installer stops on a different existing Calm Home APK. For a deliberate update from a previously supplied version (1.0 or 1.1), first back up its APK/state and approve the change, verify the new APK hash, then use `adb -s <target> install -r <path-to-new-apk>`. This preserves app data and requires the same signing certificate. Since version 1.1 the old saved fixed-list preference is dropped and old `--es apps` extras are ignored; version 1.2 starts in the automatic most-used mode, and the viewer can switch to their own apps with Choose apps. Grant Usage Access as above, then open/test the new UI. A release APK downgrade may be blocked by Android; do not promise a simple old-APK reinstall, uninstall or clear data to force rollback. Stop for review if installation/signatures or recovery are unexpected.
