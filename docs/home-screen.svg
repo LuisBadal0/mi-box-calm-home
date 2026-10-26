@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" role="img" aria-labelledby="title description">
   <title id="title">Calm Home design preview</title>
-  <desc id="description">Dark orange-to-black home screen with a large clock, six illustrative app tiles and Play Store, Settings and All apps buttons. The real app selects the top row from usage.</desc>
+  <desc id="description">Dark orange-to-black home screen with a large clock, six illustrative app tiles and Play Store, Settings, All apps and Choose apps buttons. The real app fills the top row from usage or from the apps the viewer chooses.</desc>
   <defs>
     <linearGradient id="background" x2="1" y2="1">
       <stop stop-color="#20140e"/>
@@ -68,6 +68,7 @@
       <rect x="96" y="828" width="258" height="145" rx="22"/>
       <rect x="390" y="828" width="258" height="145" rx="22"/>
       <rect x="684" y="828" width="258" height="145" rx="22"/>
+      <rect x="978" y="828" width="258" height="145" rx="22"/>
     </g>
     <g fill="none" stroke="#fff" stroke-opacity=".92" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M214 866v30l26-15z"/>
@@ -78,11 +79,13 @@
       <rect x="818" y="864" width="12" height="12" rx="1"/>
       <rect x="796" y="886" width="12" height="12" rx="1"/>
       <rect x="818" y="886" width="12" height="12" rx="1"/>
+      <path d="M1096 898l3-11 20-20 9 9-20 20zM1115 871l9 9M1110 898h20"/>
     </g>
     <g font-size="24" text-anchor="middle" fill-opacity=".88">
       <text x="225" y="939">Play Store</text>
       <text x="519" y="939">Settings</text>
       <text x="813" y="939">All apps</text>
+      <text x="1107" y="939">Choose apps</text>
     </g>
   </g>
 </svg>

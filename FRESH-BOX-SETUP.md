@@ -8,7 +8,7 @@ Use the repository's **Calm Home 1.1-most-used**, package `com.luisbadalo.calmho
 A5F9826B19B0CC0A538247BCC9233148A7610A7A75ACC5DC7C71380B8D5F2B3B
 ```
 
-The UI has a clock/date, dark orange-to-black background, up to six automatically ranked apps, and separate Play Store, Settings and All apps buttons. No apps.txt or saved app list is used. Usage Access reads Android app-use metadata for ranking; there is no Internet permission or accessibility service.
+The UI has a clock/date, dark orange-to-black background, a row of up to six apps, and separate Play Store, Settings, All apps and Choose apps buttons. The row starts with the six most-used apps; **Choose apps** lets the viewer switch to up to six installed apps they pick on the TV. Labels follow the TV's language (Portuguese or English). No apps.txt or build-time app list is used. Usage Access reads Android app-use metadata for ranking; there is no Internet permission or accessibility service.
 
 ## 1. Connect to the explicitly selected box
 
@@ -69,7 +69,7 @@ For a fresh installation, no recorded operation means `default`. Record an expli
 & $adb -s $tv shell appops set --user 0 com.luisbadalo.calmhome GET_USAGE_STATS allow
 ```
 
-Undo is the same command with the recorded original mode, commonly `default`. Do not use a broad appops reset. Alternatively, the user can select **All apps > Usage access > Open settings** in Calm Home and enable its access, if the firmware exposes that screen. No accessibility/admin/root/overlay permission is needed.
+Undo is the same command with the recorded original mode, commonly `default`. Do not use a broad appops reset. Alternatively, the user can select **Choose apps > Usage access > Open settings** in Calm Home and enable its access, if the firmware exposes that screen. Usage Access is only needed for the automatic most-used mode. No accessibility/admin/root/overlay permission is needed.
 
 After separate approval, open and test the launcher:
 
@@ -77,7 +77,7 @@ After separate approval, open and test the launcher:
 & $adb -s $tv shell am start -n com.luisbadalo.calmhome/.MainActivity
 ```
 
-Check the real TV picture, date/clock, app row, Play Store, Settings, All apps and D-pad links. The row uses Android daily usage totals for the requested last 30 days, with recent usage for ties. Installed/preinstalled launchable apps are eligible; other launchers and utility/input entries are excluded. Do not configure six package names. If history is empty/short, local launches and alphabetical order provide a fallback. With Usage Access denied, only launches from Calm Home can be counted. Explain this instead of claiming existing usage was detected.
+Check the real TV picture, date/clock, app row, Play Store, Settings, All apps, Choose apps and D-pad links. The automatic row uses Android usage aggregated over the last 30 days (older days come from weekly or monthly records), with recent usage for ties. Installed/preinstalled launchable apps are eligible; other launchers and utility/input entries are excluded. Do not configure package names through ADB. If the user wants specific apps, show them **Choose apps > Apps I choose** on the TV, where they can tick up to six. If history is empty/short, local launches and alphabetical order provide a fallback. With Usage Access denied, only launches from Calm Home can be counted. Explain this instead of claiming existing usage was detected.
 
 ## 4. Analytics and preferred Home
 

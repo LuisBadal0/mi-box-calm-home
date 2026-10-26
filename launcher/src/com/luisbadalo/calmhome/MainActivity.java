@@ -25,6 +25,7 @@ import android.os.Bundle;
 import android.os.Process;
 import android.net.Uri;
 import android.provider.Settings;
+import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -43,13 +44,16 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
 public class MainActivity extends Activity {
 
-    // No saved/built-in app list. Android usage determines the six top-row apps.
+    // The top row shows either the six most-used apps or up to six apps the viewer chose.
     private static final String PREFS = "config";
+    private static final String ROW_MODE = "row.mode", ROW_APPS = "row.apps";
+    private static final String MOST_USED = "most-used", CHOSEN = "chosen";
     private static final List<String> NOT_APPS = Arrays.asList("com.android.vending", "com.android.tv.settings",
             "com.android.tv", "com.google.android.tv", "com.droidlogic.tvinput", "com.droidlogic.tvsource",
             "com.google.android.tvlauncher", "com.google.android.apps.tv.launcherx",
@@ -57,6 +61,7 @@ public class MainActivity extends Activity {
     private static final String PLAY_STORE = "com.android.vending";
     private static final String SETTINGS = "settings";
     private static final String ALL_APPS = "all-apps";
+    private static final String CHOOSE_APPS = "choose-apps";
     private static final int PER_ROW = 6;
     private static final long HISTORY_MILLIS = 30L * 24 * 60 * 60 * 1000;
 
@@ -70,7 +75,7 @@ public class MainActivity extends Activity {
     private FrameLayout root;
     private final List<View> tiles = new ArrayList<>();
     private TextView rankingHint;
-    private boolean rankedByUsage;
+    private boolean rankedByUsage, chosenRow;
     private String focusedKey;
 
     private final BroadcastReceiver packagesChanged = new BroadcastReceiver() {
@@ -127,7 +132,8 @@ public class MainActivity extends Activity {
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
-        buildTiles();
+        // Android always pauses and resumes the activity around a new intent,
+        // so onResume() refreshes the row once.
     }
 
     private boolean hasUsageAccess() {
@@ -156,10 +162,36 @@ public class MainActivity extends Activity {
         return new ArrayList<>(apps.values());
     }
 
+    private SharedPreferences prefs() {
+        return getSharedPreferences(PREFS, 0);
+    }
+
+    private boolean chosenMode() {
+        return CHOSEN.equals(prefs().getString(ROW_MODE, MOST_USED));
+    }
+
+    /** Saved choices in the order they were picked; missing apps are skipped, not replaced. */
+    private List<String> chosenApps() {
+        List<String> out = new ArrayList<>();
+        for (String pkg : prefs().getString(ROW_APPS, "").split(","))
+            if (!pkg.isEmpty() && !out.contains(pkg)) out.add(pkg);
+        return out;
+    }
+
     private List<String> appList(PackageManager pm) {
         List<AppRanking.App> apps = candidates(pm);
+        chosenRow = chosenMode();
+        if (chosenRow) {
+            rankedByUsage = false;
+            Set<String> available = new HashSet<>();
+            for (AppRanking.App app : apps) available.add(app.packageName);
+            List<String> out = new ArrayList<>();
+            for (String pkg : chosenApps())
+                if (available.contains(pkg) && out.size() < PER_ROW) out.add(pkg);
+            return out;
+        }
         Map<String, AppRanking.App> byPackage = new HashMap<>();
-        SharedPreferences prefs = getSharedPreferences(PREFS, 0);
+        SharedPreferences prefs = prefs();
         for (AppRanking.App app : apps) {
             byPackage.put(app.packageName, app);
             app.launches = prefs.getLong("launches." + app.packageName, 0);
@@ -170,10 +202,12 @@ public class MainActivity extends Activity {
             try {
                 UsageStatsManager manager = (UsageStatsManager) getSystemService(USAGE_STATS_SERVICE);
                 long now = System.currentTimeMillis();
-                List<UsageStats> stats = manager == null ? null : manager.queryUsageStats(
-                        UsageStatsManager.INTERVAL_DAILY, now - HISTORY_MILLIS, now);
+                // Android keeps daily buckets for only about ten days. Aggregating lets it pick
+                // weekly or monthly buckets that reach back the whole window, once per app.
+                Map<String, UsageStats> stats = manager == null ? null
+                        : manager.queryAndAggregateUsageStats(now - HISTORY_MILLIS, now);
                 if (stats == null) rankedByUsage = false;
-                else for (UsageStats stat : stats) {
+                else for (UsageStats stat : stats.values()) {
                     AppRanking.App app = byPackage.get(stat.getPackageName());
                     if (app == null) continue;
                     app.foregroundMillis += Math.max(0, stat.getTotalTimeInForeground());
@@ -227,7 +261,12 @@ public class MainActivity extends Activity {
 
         int col = 0;
         List<String> apps = appList(pm);
-        rankingHint.setText(rankedByUsage ? "" : "For your most-used apps, enable Usage Access from All apps.");
+        String hint = "";
+        if (chosenRow && apps.isEmpty()) hint = t("No chosen apps to show. Open Choose apps to pick up to six.",
+                "Não há apps escolhidas para mostrar. Abra Escolher apps para escolher até seis.");
+        else if (!chosenRow && !rankedByUsage) hint = t("To show your most-used apps, allow Usage Access in Choose apps.",
+                "Para ver as apps mais usadas, permita o Acesso de utilização em Escolher apps.");
+        rankingHint.setText(hint);
         for (String pkg : apps) {
             Intent li = launchIntent(pm, pkg);
             if (li == null || col == PER_ROW) continue;
@@ -251,9 +290,11 @@ public class MainActivity extends Activity {
             addTile(PLAY_STORE, "Play Store", null, LineIcon.PLAY, null, m + col++ * (w + g), top2, w, h);
         // This Mi Box is connected to a TV; do not expose TV-input shortcuts here.
         // Hiding these buttons does not change any Android HDMI/input service.
-        addTile(SETTINGS, "Settings", null, LineIcon.SETTINGS, null, m + col * (w + g), top2, w, h);
+        addTile(SETTINGS, t("Settings", "Definições"), null, LineIcon.SETTINGS, null, m + col * (w + g), top2, w, h);
         col++;
-        addTile(ALL_APPS, "All apps", null, LineIcon.APPS, null, m + col * (w + g), top2, w, h);
+        addTile(ALL_APPS, t("All apps", "Todas as apps"), null, LineIcon.APPS, null, m + col * (w + g), top2, w, h);
+        col++;
+        addTile(CHOOSE_APPS, t("Choose apps", "Escolher apps"), null, LineIcon.EDIT, null, m + col * (w + g), top2, w, h);
 
         linkFocus(appCount);
 
@@ -365,6 +406,7 @@ public class MainActivity extends Activity {
 
     private void open(String key) {
         if (ALL_APPS.equals(key)) { showAllApps(); return; }
+        if (CHOOSE_APPS.equals(key)) { showRowChoice(); return; }
         Intent i;
         if (SETTINGS.equals(key)) {
             i = new Intent(Settings.ACTION_SETTINGS);
@@ -376,47 +418,123 @@ public class MainActivity extends Activity {
         try {
             startActivity(i);
             if (!SETTINGS.equals(key) && !PLAY_STORE.equals(key)) {
-                SharedPreferences prefs = getSharedPreferences(PREFS, 0);
+                SharedPreferences prefs = prefs();
                 long previous = prefs.getLong("launches." + key, 0);
                 prefs.edit().putLong("launches." + key, previous == Long.MAX_VALUE ? previous : previous + 1)
                         .putLong("last." + key, System.currentTimeMillis()).apply();
             }
         }
         catch (Exception ignored) {
-            Toast.makeText(this, "Unable to open this app. Check Android Settings.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, t("Unable to open this app. Check Android Settings.",
+                    "Não foi possível abrir esta app. Verifique as Definições do Android."), Toast.LENGTH_SHORT).show();
         }
     }
 
-    private void showAllApps() {
+    private List<AppRanking.App> sortedApps() {
         List<AppRanking.App> apps = candidates(getPackageManager());
         Collections.sort(apps, (a, b) -> {
             int label = a.label.compareToIgnoreCase(b.label);
             return label != 0 ? label : a.packageName.compareTo(b.packageName);
         });
+        return apps;
+    }
+
+    private static String[] labels(List<AppRanking.App> apps) {
         String[] labels = new String[apps.size()];
         for (int i = 0; i < labels.length; i++) labels[i] = apps.get(i).label;
-        new AlertDialog.Builder(this).setTitle("All apps")
-                .setItems(labels, (dialog, which) -> open(apps.get(which).packageName))
-                .setNeutralButton("Usage access", (dialog, which) -> showUsageAccess())
-                .setNegativeButton("Close", null).show();
+        return labels;
+    }
+
+    private void showAllApps() {
+        List<AppRanking.App> apps = sortedApps();
+        new AlertDialog.Builder(this).setTitle(t("All apps", "Todas as apps"))
+                .setItems(labels(apps), (dialog, which) -> open(apps.get(which).packageName))
+                .setNeutralButton(t("Choose apps", "Escolher apps"), (dialog, which) -> showRowChoice())
+                .setNegativeButton(t("Close", "Fechar"), null).show();
+    }
+
+    /** Lets the viewer keep the automatic most-used row or pick their own apps. */
+    private void showRowChoice() {
+        String[] options = {t("Most-used apps (automatic)", "Apps mais usadas (automático)"),
+                t("Apps I choose", "Apps escolhidas por mim")};
+        new AlertDialog.Builder(this).setTitle(t("Top row", "Linha de cima"))
+                .setSingleChoiceItems(options, chosenMode() ? 1 : 0, (dialog, which) -> {
+                    dialog.dismiss();
+                    if (which == 0) {
+                        prefs().edit().putString(ROW_MODE, MOST_USED).apply();
+                        buildTiles();
+                        if (!hasUsageAccess()) showUsageAccess();
+                    } else {
+                        showAppPicker();
+                    }
+                })
+                .setNeutralButton(t("Usage access", "Acesso de utilização"), (dialog, which) -> showUsageAccess())
+                .setNegativeButton(t("Close", "Fechar"), null).show();
+    }
+
+    private String pickerTitle(int count) {
+        return t("Choose up to six apps", "Escolha até seis apps") + " (" + count + "/" + PER_ROW + ")";
+    }
+
+    /** Multi-select list of installed apps; the row follows the order apps are picked. */
+    private void showAppPicker() {
+        final List<AppRanking.App> apps = sortedApps();
+        final boolean[] checked = new boolean[apps.size()];
+        final List<String> picked = new ArrayList<>();
+        for (String pkg : chosenApps()) {
+            for (int i = 0; i < apps.size(); i++) {
+                if (apps.get(i).packageName.equals(pkg) && picked.size() < PER_ROW) {
+                    picked.add(pkg);
+                    checked[i] = true;
+                }
+            }
+        }
+        new AlertDialog.Builder(this).setTitle(pickerTitle(picked.size()))
+                .setMultiChoiceItems(labels(apps), checked, (dialog, which, isChecked) -> {
+                    String pkg = apps.get(which).packageName;
+                    if (isChecked && !picked.contains(pkg) && picked.size() >= PER_ROW) {
+                        checked[which] = false;
+                        ((AlertDialog) dialog).getListView().setItemChecked(which, false);
+                        Toast.makeText(this, t("You can choose up to six apps.", "Pode escolher até seis apps."), Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    if (!isChecked) picked.remove(pkg);
+                    else if (!picked.contains(pkg)) picked.add(pkg);
+                    ((AlertDialog) dialog).setTitle(pickerTitle(picked.size()));
+                })
+                .setPositiveButton(t("Save", "Guardar"), (dialog, which) -> {
+                    prefs().edit().putString(ROW_MODE, CHOSEN)
+                            .putString(ROW_APPS, TextUtils.join(",", picked)).apply();
+                    buildTiles();
+                })
+                .setNegativeButton(t("Cancel", "Cancelar"), null).show();
     }
 
     private void showUsageAccess() {
-        new AlertDialog.Builder(this).setTitle("Show your most-used apps")
-                .setMessage("Usage Access lets Calm Home rank apps by time used on this TV over the last 30 days. "
+        new AlertDialog.Builder(this).setTitle(t("Show your most-used apps", "Mostrar as apps mais usadas"))
+                .setMessage(t("Usage Access lets Calm Home rank apps by time used on this TV over the last 30 days. "
                         + "Nothing is sent online. You can revoke this access in Android Settings. "
-                        + "Without it, the row uses launches from Calm Home, then alphabetical order when there is no history.")
-                .setPositiveButton("Open settings", (dialog, which) -> {
+                        + "Without it, the row uses launches from Calm Home, then alphabetical order when there is no history.",
+                        "O Acesso de utilização permite ao Calm Home ordenar as apps pelo tempo de uso nesta TV "
+                        + "nos últimos 30 dias. Nada é enviado para a Internet. Pode retirar este acesso nas Definições "
+                        + "do Android. Sem ele, a linha usa as aberturas feitas no Calm Home e, sem histórico, a ordem alfabética."))
+                .setPositiveButton(t("Open settings", "Abrir definições"), (dialog, which) -> {
                     Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS,
                             Uri.parse("package:" + getPackageName()));
                     try { startActivity(intent); }
                     catch (RuntimeException missingDetail) {
                         try { startActivity(new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)); }
                         catch (RuntimeException unavailable) {
-                            Toast.makeText(this, "This TV needs the computer setup installer to enable Usage Access.", Toast.LENGTH_LONG).show();
+                            Toast.makeText(this, t("This TV needs the computer setup installer to enable Usage Access.",
+                                    "Esta TV precisa do instalador no computador para ativar o Acesso de utilização."), Toast.LENGTH_LONG).show();
                         }
                     }
-                }).setNegativeButton("Cancel", null).show();
+                }).setNegativeButton(t("Cancel", "Cancelar"), null).show();
+    }
+
+    // English by default; Portuguese when the TV's system language is Portuguese.
+    private static String t(String en, String pt) {
+        return "pt".equals(Locale.getDefault().getLanguage()) ? pt : en;
     }
 
     private static Intent launchIntent(PackageManager pm, String pkg) {

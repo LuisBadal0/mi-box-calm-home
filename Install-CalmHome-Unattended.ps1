@@ -166,7 +166,10 @@ function Check-UI {
             [void](Shell @('uiautomator','dump',$remote)); $raw=Shell @('cat',$remote)
             [xml]$xml=$raw; $nodes=@($xml.SelectNodes('//node'))
             $texts=@($nodes | ForEach-Object { $_.GetAttribute('text') })
-            if ($texts -contains 'Play Store' -and $texts -contains 'Settings' -and $texts -contains 'All apps' -and @($texts | Where-Object { $_ -match '^\d{1,2}:\d{2}$' }).Count -gt 0 -and @($nodes | Where-Object { $_.GetAttribute('clickable') -eq 'true' }).Count -ge 3) { Save-Text 'calm-home-ui.xml' $raw; return }
+            # Utility labels follow the TV's language (English or Portuguese).
+            $settingsLabel=($texts -contains 'Settings' -or $texts -contains "Defini$([char]0x00E7)$([char]0x00F5)es")
+            $allAppsLabel=($texts -contains 'All apps' -or $texts -contains 'Todas as apps')
+            if ($texts -contains 'Play Store' -and $settingsLabel -and $allAppsLabel -and @($texts | Where-Object { $_ -match '^\d{1,2}:\d{2}$' }).Count -gt 0 -and @($nodes | Where-Object { $_.GetAttribute('clickable') -eq 'true' }).Count -ge 3) { Save-Text 'calm-home-ui.xml' $raw; return }
         } catch { if ($attempt -eq 2) { throw "Cannot verify Calm Home UI; stock Home will not be disabled. $($_.Exception.Message)" } }
     }
     throw 'Calm Home clock/utility tiles could not be verified; stock Home will not be disabled.'
@@ -197,7 +200,7 @@ function Write-Undo {
     }
     $lines.Add(''); $lines.Add('## Individual original values / optional undo')
     foreach ($change in $script:Changes) { $lines.Add('- '+$change.Name+' ['+$change.Status+']: adb -s '+$script:Target+' '+($change.UndoArguments -join ' ')) }
-    $lines.Add(''); $lines.Add('Original sleep times were preserved and need no undo. The app row is selected automatically from usage, not a fixed list. Revoke Usage Access using the recorded grant-usage-access undo command; without it, Calm Home falls back to local launch counts. Full original settings, package states, readable APKs and checksums are in this folder. These are not a full firmware/private-data backup. See journal.json for exact applied/skipped/failed state and verifications.')
+    $lines.Add(''); $lines.Add('Original sleep times were preserved and need no undo. The app row starts in the automatic most-used mode; the viewer can pick their own apps on the TV with Choose apps. No app list is set by this installer. Revoke Usage Access using the recorded grant-usage-access undo command; without it, Calm Home falls back to local launch counts. Full original settings, package states, readable APKs and checksums are in this folder. These are not a full firmware/private-data backup. See journal.json for exact applied/skipped/failed state and verifications.')
     [IO.File]::WriteAllLines((Join-Path $script:RunFolder 'UNDO.md'),$lines,[Text.UTF8Encoding]::new($false))
 }
 function Recover-OnFailure {
@@ -245,7 +248,7 @@ try {
     Save-Text 'APP-INVENTORY.md' ($inventoryLines -join "`n")
     foreach ($namespace in @('global','secure','system')) { Save-Text "settings-$namespace.txt" (Shell @('settings','list',$namespace)) }
     Save-Text 'package-details.txt' (Shell @('dumpsys','package')); Save-Text 'preferred-home.xml' (Shell @('dumpsys','package','preferred-xml'))
-    $script:Journal.AppSelection='Up to six launchable apps ranked by Android foreground time over the last 30 days; local launch counts and alphabetical fallback when history is unavailable.'
+    $script:Journal.AppSelection='Starts with up to six launchable apps ranked by Android foreground time aggregated over the last 30 days; local launch counts and alphabetical fallback when history is unavailable. The viewer can switch to up to six chosen apps on the TV with Choose apps.'
     $script:Journal.UsageAccessOriginalMode=if ($packages -contains $script:Package) { Usage-AccessMode } else { 'default' }
     if ($PlanOnly) { $script:Journal.Status='plan only; no TV changes'; Save-Journal; Write-Undo; Write-Host "Read-only plan saved: $script:RunFolder"; return }
     Write-Host 'Saving readable APKs before changes...'

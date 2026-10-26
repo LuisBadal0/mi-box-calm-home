@@ -2,11 +2,11 @@
 
 A minimal Android TV home screen based on [Ansub/tv-detox](https://github.com/Ansub/tv-detox), customized for Xiaomi Mi Box.
 
-The top row automatically shows **up to six most-used apps**. A large live clock/date and dark orange-to-black background keep the screen simple. Play Store, Settings and All apps stay available underneath. There are no ads, sponsored recommendations or HDMI shortcuts.
+The top row shows **up to six apps**: by default your six most-used apps, or up to six installed apps you choose yourself. A large live clock/date and dark orange-to-black background keep the screen simple. Play Store, Settings, All apps and Choose apps stay available underneath. The interface follows the TV's language: Portuguese on a Portuguese TV, English otherwise. There are no ads, sponsored recommendations or HDMI shortcuts.
 
-![Calm Home design preview with a clock, six example app tiles, Play Store, Settings and All apps](docs/home-screen.svg)
+![Calm Home design preview with a clock, six example app tiles, Play Store, Settings, All apps and Choose apps](docs/home-screen.svg)
 
-*Design preview. The example app tiles illustrate the layout; your apps are selected from your usage.*
+*Design preview. The example app tiles illustrate the layout; your apps come from your usage or your own choice.*
 
 ## Set up with Claude Code or Codex
 
@@ -24,7 +24,7 @@ Help me enable developer/USB/network debugging if necessary. Use Google's offici
 I authorize the documented automatic setup on this target without asking before each step. Run:
 pwsh -NoProfile -File .\Install-CalmHome-Unattended.ps1 -TvIp [TV_IP] -CloseWifiDebugging
 
-Create this box's own app inventory, original-settings/readable-APK backups and undo journal before changes. Install/open the reviewed launcher and enable only its Usage Access, recording the original mode for undo. Let it automatically show up to six most-used launchable apps using Android foreground-time history for the requested last 30 days. Keep the clock, orange-to-dark design, Play Store, Settings and All apps. Explain the local-launch/alphabetical fallback if usage history is unavailable; do not pass a fixed app list.
+Create this box's own app inventory, original-settings/readable-APK backups and undo journal before changes. Install/open the reviewed launcher and enable only its Usage Access, recording the original mode for undo. Let it start with the automatic row of up to six most-used launchable apps using Android foreground-time history for the last 30 days. Keep the clock, orange-to-dark design, Play Store, Settings, All apps and Choose apps. Explain the local-launch/alphabetical fallback if usage history is unavailable, and that I can switch to my own six apps on the TV with Choose apps; do not pass a fixed app list.
 
 Disable only verified Xiaomi analytics and, if necessary after testing Home, the specific stock Google Home launcher. Keep both installed. Turn off animations and screensaver, preserve the TV's original sleep times, and protect Google Play/services, keyboard, Bluetooth, HDMI and accessibility settings. Never uninstall, clear data, root, flash, bulk-disable, grant accessibility/admin access or transfer accounts.
 
@@ -35,11 +35,16 @@ The longer [automatic prompt](REPLICATE-NO-PROMPTS.md) and [setup guide](AUTOMAT
 
 ## How apps are selected
 
-With **Usage Access**, Calm Home reads Android's daily app-usage statistics for the last 30 days and sorts launchable apps by total foreground time. Ties use most recent usage, local launch history, then app name. Android can retain less history or include the boundary of a daily bucket; the result reflects the history the TV provides.
+Select **Choose apps** on the TV to pick how the top row is filled:
 
-Both installed and preinstalled launchable apps are eligible. Home launchers, Play Store, Settings and TV-input tools are excluded from the ranked row. Uninstalled or disabled apps disappear automatically. The row refreshes when you return Home and when packages change.
+- **Most-used apps (automatic)**, the default: the six apps you use most, as described below.
+- **Apps I choose**: tick up to six installed apps. The row keeps the order you picked them in. A chosen app that is later uninstalled or disabled is simply left out; nothing replaces it automatically. Open Choose apps again to change the selection or switch back.
 
-On a fresh TV without recorded usage, apps start in alphabetical order. If Usage Access is unavailable or revoked, the row uses successful launches from Calm Home, with recency and alphabetical tie-breaks. That fallback counts launches since this version was installed; it cannot see time spent in apps or launches from other screens. **All apps** lets you open an app outside the top six. No app names are configured at install/build time.
+In the automatic mode, with **Usage Access**, Calm Home asks Android for app usage aggregated over the last 30 days and sorts launchable apps by total foreground time. Android keeps daily records for only about ten days and summarizes older days into weekly or monthly records, so the edges of the window are approximate. Ties use most recent usage, local launch history, then app name.
+
+Both installed and preinstalled launchable apps are eligible in both modes. Home launchers, Play Store, Settings and TV-input tools are excluded from the row. Uninstalled or disabled apps disappear automatically. The row refreshes when you return Home and when packages change.
+
+On a fresh TV without recorded usage, apps start in alphabetical order. If Usage Access is unavailable or revoked, the automatic row uses successful launches from Calm Home, with recency and alphabetical tie-breaks. That fallback counts launches since this version was installed; it cannot see time spent in apps or launches from other screens. **All apps** lets you open an app outside the row. No app names are configured at install/build time.
 
 ## Supported automatic setup
 
@@ -69,7 +74,7 @@ pwsh -NoProfile -File .\Install-CalmHome-Unattended.ps1 -TvIp 192.168.1.20 -Clos
 
 - Saves original settings, package state, readable APKs, an English inventory and per-box undo instructions.
 - Installs the included reviewed APK and grants local Usage Access, recording its original mode for undo.
-- Opens and verifies the clock and all three utility buttons before replacing Home.
+- Opens and verifies the clock and the Play Store, Settings and All apps buttons (in English or Portuguese) before replacing Home. It always starts in the automatic most-used mode.
 - Disables Xiaomi analytics and, only if needed for Home to work, the stock Google Android TV launcher. Both remain installed.
 - Turns off animations and screensaver, while preserving original screen-off/sleep times, Google Play, keyboard, Bluetooth, HDMI and accessibility settings.
 - Restarts when changes were made, verifies persistence and records available/unused RAM before and after. RAM readings fluctuate and are not a speed benchmark.
@@ -80,7 +85,7 @@ It does not install other apps, transfer accounts, clear app data, uninstall, ro
 
 This version declares `android.permission.PACKAGE_USAGE_STATS`. Usage Access lets it read which apps were used and when/how long they were in the foreground. It requests **no Internet permission**, sends no usage data online and runs no tracking service. Ranking data is read from Android into memory; local launch counts/timestamps stay in Calm Home's private preferences.
 
-The automatic installer enables `GET_USAGE_STATS` through ADB and records an undo command. For manual installation, choose **All apps > Usage access > Open settings**, then enable Calm Home. Some Mi Box firmware has no usage-access settings screen; use the documented ADB command in the guided guide instead.
+The automatic installer enables `GET_USAGE_STATS` through ADB and records an undo command. For manual installation, choose **Choose apps > Usage access > Open settings**, then enable Calm Home. Usage Access is not needed if you only use **Apps I choose**. Some Mi Box firmware has no usage-access settings screen; use the documented ADB command in the guided guide instead.
 
 Revoke access in Android Settings or restore the original app-op mode using your run's `UNDO.md`. Calm Home continues with the local-launch fallback. See [Android's UsageStatsManager documentation](https://developer.android.com/reference/android/app/usage/UsageStatsManager).
 
