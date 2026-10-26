@@ -127,7 +127,8 @@ public class MainActivity extends Activity {
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
-        buildTiles();
+        // Android always pauses and resumes the activity around a new intent,
+        // so onResume() refreshes the row once.
     }
 
     private boolean hasUsageAccess() {
@@ -170,10 +171,12 @@ public class MainActivity extends Activity {
             try {
                 UsageStatsManager manager = (UsageStatsManager) getSystemService(USAGE_STATS_SERVICE);
                 long now = System.currentTimeMillis();
-                List<UsageStats> stats = manager == null ? null : manager.queryUsageStats(
-                        UsageStatsManager.INTERVAL_DAILY, now - HISTORY_MILLIS, now);
+                // Android keeps daily buckets for only about ten days. Aggregating lets it pick
+                // weekly or monthly buckets that reach back the whole window, once per app.
+                Map<String, UsageStats> stats = manager == null ? null
+                        : manager.queryAndAggregateUsageStats(now - HISTORY_MILLIS, now);
                 if (stats == null) rankedByUsage = false;
-                else for (UsageStats stat : stats) {
+                else for (UsageStats stat : stats.values()) {
                     AppRanking.App app = byPackage.get(stat.getPackageName());
                     if (app == null) continue;
                     app.foregroundMillis += Math.max(0, stat.getTotalTimeInForeground());
