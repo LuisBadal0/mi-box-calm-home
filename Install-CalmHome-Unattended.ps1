@@ -166,7 +166,10 @@ function Check-UI {
             [void](Shell @('uiautomator','dump',$remote)); $raw=Shell @('cat',$remote)
             [xml]$xml=$raw; $nodes=@($xml.SelectNodes('//node'))
             $texts=@($nodes | ForEach-Object { $_.GetAttribute('text') })
-            if ($texts -contains 'Play Store' -and $texts -contains 'Settings' -and $texts -contains 'All apps' -and @($texts | Where-Object { $_ -match '^\d{1,2}:\d{2}$' }).Count -gt 0 -and @($nodes | Where-Object { $_.GetAttribute('clickable') -eq 'true' }).Count -ge 3) { Save-Text 'calm-home-ui.xml' $raw; return }
+            # Utility labels follow the TV's language (English or Portuguese).
+            $settingsLabel=($texts -contains 'Settings' -or $texts -contains "Defini$([char]0x00E7)$([char]0x00F5)es")
+            $allAppsLabel=($texts -contains 'All apps' -or $texts -contains 'Todas as apps')
+            if ($texts -contains 'Play Store' -and $settingsLabel -and $allAppsLabel -and @($texts | Where-Object { $_ -match '^\d{1,2}:\d{2}$' }).Count -gt 0 -and @($nodes | Where-Object { $_.GetAttribute('clickable') -eq 'true' }).Count -ge 3) { Save-Text 'calm-home-ui.xml' $raw; return }
         } catch { if ($attempt -eq 2) { throw "Cannot verify Calm Home UI; stock Home will not be disabled. $($_.Exception.Message)" } }
     }
     throw 'Calm Home clock/utility tiles could not be verified; stock Home will not be disabled.'
