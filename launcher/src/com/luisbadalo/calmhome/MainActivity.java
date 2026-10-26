@@ -25,6 +25,7 @@ import android.os.Bundle;
 import android.os.Process;
 import android.net.Uri;
 import android.provider.Settings;
+import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -48,8 +49,10 @@ import java.util.Set;
 
 public class MainActivity extends Activity {
 
-    // No saved/built-in app list. Android usage determines the six top-row apps.
+    // The top row shows either the six most-used apps or up to six apps the viewer chose.
     private static final String PREFS = "config";
+    private static final String ROW_MODE = "row.mode", ROW_APPS = "row.apps";
+    private static final String MOST_USED = "most-used", CHOSEN = "chosen";
     private static final List<String> NOT_APPS = Arrays.asList("com.android.vending", "com.android.tv.settings",
             "com.android.tv", "com.google.android.tv", "com.droidlogic.tvinput", "com.droidlogic.tvsource",
             "com.google.android.tvlauncher", "com.google.android.apps.tv.launcherx",
@@ -57,6 +60,7 @@ public class MainActivity extends Activity {
     private static final String PLAY_STORE = "com.android.vending";
     private static final String SETTINGS = "settings";
     private static final String ALL_APPS = "all-apps";
+    private static final String CHOOSE_APPS = "choose-apps";
     private static final int PER_ROW = 6;
     private static final long HISTORY_MILLIS = 30L * 24 * 60 * 60 * 1000;
 
@@ -70,7 +74,7 @@ public class MainActivity extends Activity {
     private FrameLayout root;
     private final List<View> tiles = new ArrayList<>();
     private TextView rankingHint;
-    private boolean rankedByUsage;
+    private boolean rankedByUsage, chosenRow;
     private String focusedKey;
 
     private final BroadcastReceiver packagesChanged = new BroadcastReceiver() {
@@ -157,10 +161,36 @@ public class MainActivity extends Activity {
         return new ArrayList<>(apps.values());
     }
 
+    private SharedPreferences prefs() {
+        return getSharedPreferences(PREFS, 0);
+    }
+
+    private boolean chosenMode() {
+        return CHOSEN.equals(prefs().getString(ROW_MODE, MOST_USED));
+    }
+
+    /** Saved choices in the order they were picked; missing apps are skipped, not replaced. */
+    private List<String> chosenApps() {
+        List<String> out = new ArrayList<>();
+        for (String pkg : prefs().getString(ROW_APPS, "").split(","))
+            if (!pkg.isEmpty() && !out.contains(pkg)) out.add(pkg);
+        return out;
+    }
+
     private List<String> appList(PackageManager pm) {
         List<AppRanking.App> apps = candidates(pm);
+        chosenRow = chosenMode();
+        if (chosenRow) {
+            rankedByUsage = false;
+            Set<String> available = new HashSet<>();
+            for (AppRanking.App app : apps) available.add(app.packageName);
+            List<String> out = new ArrayList<>();
+            for (String pkg : chosenApps())
+                if (available.contains(pkg) && out.size() < PER_ROW) out.add(pkg);
+            return out;
+        }
         Map<String, AppRanking.App> byPackage = new HashMap<>();
-        SharedPreferences prefs = getSharedPreferences(PREFS, 0);
+        SharedPreferences prefs = prefs();
         for (AppRanking.App app : apps) {
             byPackage.put(app.packageName, app);
             app.launches = prefs.getLong("launches." + app.packageName, 0);
@@ -230,7 +260,10 @@ public class MainActivity extends Activity {
 
         int col = 0;
         List<String> apps = appList(pm);
-        rankingHint.setText(rankedByUsage ? "" : "For your most-used apps, enable Usage Access from All apps.");
+        String hint = "";
+        if (chosenRow && apps.isEmpty()) hint = "No apps chosen yet. Open Choose apps to pick up to six.";
+        else if (!chosenRow && !rankedByUsage) hint = "To show your most-used apps, allow Usage Access in Choose apps.";
+        rankingHint.setText(hint);
         for (String pkg : apps) {
             Intent li = launchIntent(pm, pkg);
             if (li == null || col == PER_ROW) continue;
@@ -257,6 +290,8 @@ public class MainActivity extends Activity {
         addTile(SETTINGS, "Settings", null, LineIcon.SETTINGS, null, m + col * (w + g), top2, w, h);
         col++;
         addTile(ALL_APPS, "All apps", null, LineIcon.APPS, null, m + col * (w + g), top2, w, h);
+        col++;
+        addTile(CHOOSE_APPS, "Choose apps", null, LineIcon.EDIT, null, m + col * (w + g), top2, w, h);
 
         linkFocus(appCount);
 
@@ -368,6 +403,7 @@ public class MainActivity extends Activity {
 
     private void open(String key) {
         if (ALL_APPS.equals(key)) { showAllApps(); return; }
+        if (CHOOSE_APPS.equals(key)) { showRowChoice(); return; }
         Intent i;
         if (SETTINGS.equals(key)) {
             i = new Intent(Settings.ACTION_SETTINGS);
@@ -379,7 +415,7 @@ public class MainActivity extends Activity {
         try {
             startActivity(i);
             if (!SETTINGS.equals(key) && !PLAY_STORE.equals(key)) {
-                SharedPreferences prefs = getSharedPreferences(PREFS, 0);
+                SharedPreferences prefs = prefs();
                 long previous = prefs.getLong("launches." + key, 0);
                 prefs.edit().putLong("launches." + key, previous == Long.MAX_VALUE ? previous : previous + 1)
                         .putLong("last." + key, System.currentTimeMillis()).apply();
@@ -390,18 +426,83 @@ public class MainActivity extends Activity {
         }
     }
 
-    private void showAllApps() {
+    private List<AppRanking.App> sortedApps() {
         List<AppRanking.App> apps = candidates(getPackageManager());
         Collections.sort(apps, (a, b) -> {
             int label = a.label.compareToIgnoreCase(b.label);
             return label != 0 ? label : a.packageName.compareTo(b.packageName);
         });
+        return apps;
+    }
+
+    private static String[] labels(List<AppRanking.App> apps) {
         String[] labels = new String[apps.size()];
         for (int i = 0; i < labels.length; i++) labels[i] = apps.get(i).label;
+        return labels;
+    }
+
+    private void showAllApps() {
+        List<AppRanking.App> apps = sortedApps();
         new AlertDialog.Builder(this).setTitle("All apps")
-                .setItems(labels, (dialog, which) -> open(apps.get(which).packageName))
+                .setItems(labels(apps), (dialog, which) -> open(apps.get(which).packageName))
+                .setNeutralButton("Choose apps", (dialog, which) -> showRowChoice())
+                .setNegativeButton("Close", null).show();
+    }
+
+    /** Lets the viewer keep the automatic most-used row or pick their own apps. */
+    private void showRowChoice() {
+        String[] options = {"Most-used apps (automatic)", "Apps I choose"};
+        new AlertDialog.Builder(this).setTitle("Top row")
+                .setSingleChoiceItems(options, chosenMode() ? 1 : 0, (dialog, which) -> {
+                    dialog.dismiss();
+                    if (which == 0) {
+                        prefs().edit().putString(ROW_MODE, MOST_USED).apply();
+                        buildTiles();
+                        if (!hasUsageAccess()) showUsageAccess();
+                    } else {
+                        showAppPicker();
+                    }
+                })
                 .setNeutralButton("Usage access", (dialog, which) -> showUsageAccess())
                 .setNegativeButton("Close", null).show();
+    }
+
+    private String pickerTitle(int count) {
+        return "Choose up to six apps (" + count + "/" + PER_ROW + ")";
+    }
+
+    /** Multi-select list of installed apps; the row follows the order apps are picked. */
+    private void showAppPicker() {
+        final List<AppRanking.App> apps = sortedApps();
+        final boolean[] checked = new boolean[apps.size()];
+        final List<String> picked = new ArrayList<>();
+        for (String pkg : chosenApps()) {
+            for (int i = 0; i < apps.size(); i++) {
+                if (apps.get(i).packageName.equals(pkg) && picked.size() < PER_ROW) {
+                    picked.add(pkg);
+                    checked[i] = true;
+                }
+            }
+        }
+        new AlertDialog.Builder(this).setTitle(pickerTitle(picked.size()))
+                .setMultiChoiceItems(labels(apps), checked, (dialog, which, isChecked) -> {
+                    String pkg = apps.get(which).packageName;
+                    if (isChecked && !picked.contains(pkg) && picked.size() >= PER_ROW) {
+                        checked[which] = false;
+                        ((AlertDialog) dialog).getListView().setItemChecked(which, false);
+                        Toast.makeText(this, "You can choose up to six apps.", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    if (!isChecked) picked.remove(pkg);
+                    else if (!picked.contains(pkg)) picked.add(pkg);
+                    ((AlertDialog) dialog).setTitle(pickerTitle(picked.size()));
+                })
+                .setPositiveButton("Save", (dialog, which) -> {
+                    prefs().edit().putString(ROW_MODE, CHOSEN)
+                            .putString(ROW_APPS, TextUtils.join(",", picked)).apply();
+                    buildTiles();
+                })
+                .setNegativeButton("Cancel", null).show();
     }
 
     private void showUsageAccess() {
