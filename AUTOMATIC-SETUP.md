@@ -32,18 +32,23 @@ pwsh -NoProfile -File .\Install-CalmHome-Unattended.ps1 -TvIp 192.168.1.20 -Clos
 2. Create a separate journal, original settings/package snapshots, English app inventory and initial memory reading. Unknown apps are kept enabled. Save readable installed APKs and their checksums/error records before setup changes; this can take several minutes.
 3. Install version **1.1-most-used** (`com.luisbadalo.calmhome`) if absent. Skip installation when the same reviewed build is already enabled.
 4. Enable **Usage Access** for Calm Home using `appops set --user 0 com.luisbadalo.calmhome GET_USAGE_STATS allow`, unless already allowed. Record the original mode and exact undo command. This is the only new special access; accessibility/device-admin are not granted. Verify the mode before replacing Home.
-5. Open Calm Home and verify the real foreground, clock, Play Store, Settings and All apps; save a screenshot. There is no app list to configure.
+5. Open Calm Home and verify the real foreground, clock, Play Store, Settings and All apps (Definições and Todas as apps on a Portuguese TV); save a screenshot. The installer passes no app list: the row starts in the automatic most-used mode, and the viewer can later pick their own apps on the TV with Choose apps.
 6. Disable only exact Xiaomi analytics (`com.miui.tv.analytics`) if present/enabled.
 7. Select Calm Home as preferred and test the real Home button from Settings. Only if the confirmed competing app is `com.google.android.tvlauncher`, disable that launcher while keeping it installed, then test again. Do not disable other Home/setup/input services.
 8. Set the three animation scales and screensaver to 0, skipping values already 0. Preserve original sleep/screen-off times, keyboard, Bluetooth, HDMI, accessibility and protected Google services.
 9. Record RAM immediately before restart; restart only if setup changes occurred. Confirm a new completed boot, preserve original packages/protected settings, confirm Usage Access and Home work, save a final screenshot and record RAM afterward. A matching fully configured rerun skips settings changes and restart.
 10. Write per-box `journal.json`, `UNDO.md`, `APP-INVENTORY.md`, CSV, settings snapshots, readable APK backups and screenshots under `tv-backup/`.
 
-## Automatic app selection
+## App row
 
-The row contains up to six launchable apps, ranked by Android-reported foreground time for the requested last 30 days. Installed and preinstalled apps are eligible; Home launchers, Play Store, Settings and TV-input tools are excluded. Recent usage breaks duration ties. Android may retain fewer days or include edges of daily buckets. It is a local ranking, not exact screen-time accounting.
+The row contains up to six launchable apps. **Choose apps** on the TV switches between two modes:
 
-The row refreshes on return Home and package changes. All apps remains available for opening anything outside the row. With no recorded usage, local launches then alphabetical order fill the row. Without Usage Access, only launches from Calm Home can influence ranking. No missing apps are downloaded, accounts copied or VPN permissions granted.
+- **Most-used apps (automatic)**, the default after setup: apps ranked by Android-reported foreground time aggregated over the last 30 days. Android keeps daily records for about ten days and summarizes older days into weekly or monthly records, so the window edges are approximate. Recent usage breaks duration ties. It is a local ranking, not exact screen-time accounting.
+- **Apps I choose**: up to six installed apps ticked by the viewer, shown in the order picked. Chosen apps that disappear are skipped, not replaced.
+
+Installed and preinstalled apps are eligible; Home launchers, Play Store, Settings and TV-input tools are excluded. The row refreshes on return Home and package changes. All apps remains available for opening anything outside the row. In the automatic mode, with no recorded usage, local launches then alphabetical order fill the row; without Usage Access, only launches from Calm Home can influence ranking. No missing apps are downloaded, accounts copied or VPN permissions granted.
+
+The interface is in Portuguese when the TV's language is Portuguese and in English otherwise.
 
 Usage Access reveals app-use metadata to Calm Home. It has no Internet permission, uploads nothing and runs no tracking service. Restore the original app-op mode with the per-box undo command to revoke the new access. A later automatic setup invocation will enable it again because that is part of this mode's stated scope.
 
