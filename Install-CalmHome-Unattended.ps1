@@ -62,6 +62,9 @@ function Invoke-Tool([string[]]$Arguments, [int]$Timeout=30, [switch]$Soft) {
     foreach ($argValue in $Arguments) { $info.ArgumentList.Add($argValue) }
     $info.UseShellExecute=$false; $info.CreateNoWindow=$true
     $info.RedirectStandardOutput=$true; $info.RedirectStandardError=$true
+    # adb passes the TV's UTF-8 text through unchanged; the console code page (often 850) would garble
+    # accented labels such as the Portuguese Settings tile and fail the UI check on a Portuguese TV.
+    $info.StandardOutputEncoding=[Text.UTF8Encoding]::new($false); $info.StandardErrorEncoding=[Text.UTF8Encoding]::new($false)
     $process = [Diagnostics.Process]::new(); $process.StartInfo=$info
     try {
         [void]$process.Start()
