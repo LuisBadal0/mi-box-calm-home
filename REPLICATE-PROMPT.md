@@ -6,7 +6,7 @@ Fill in the new IP and use this repository folder:
 Set up my Xiaomi MIBOX4 / Android 9 using this Calm Home repository.
 New target IP: [NEW_BOX_IP]
 
-Read FRESH-BOX-SETUP.md. Use com.luisbadalo.calmhome version 1.1-most-used, versionCode 2. Verify APK SHA-256 A5F9826B19B0CC0A538247BCC9233148A7610A7A75ACC5DC7C71380B8D5F2B3B; stop on a mismatch rather than substituting an APK.
+Read FRESH-BOX-SETUP.md. Use com.luisbadalo.calmhome version 1.2-choose-apps, versionCode 3. Verify APK SHA-256 93AC9375760F9E6BE9D990343FA500614725FE5994C6EAA9A36034C004C65ABD; stop on a mismatch rather than substituting an APK.
 
 Ask before EVERY TV change, including install/open, Usage Access, selecting/disabling Home, analytics, animation/screensaver settings, reboot and debugging shutdown. Use the supplied IP for every command; verify actual model/API/serial/current user first. Walk me through developer/debugging authorization taps and wait for acceptance.
 

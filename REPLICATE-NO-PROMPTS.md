@@ -6,7 +6,7 @@ Fill in the target IP and open this repository folder:
 Set up my Xiaomi MIBOX4 running Android 9 using this reviewed Calm Home repository.
 New target IP: [NEW_BOX_IP]
 
-Use AUTOMATIC-SETUP.md and Install-CalmHome-Unattended.ps1. I authorize its documented automatic scope on this explicit target without asking for confirmation before each step. Verify model MIBOX4, API 28, user 0 and APK SHA-256 A5F9826B19B0CC0A538247BCC9233148A7610A7A75ACC5DC7C71380B8D5F2B3B. Use version 1.1-most-used (versionCode 2); do not substitute an unreviewed APK or guess around an unexpected configuration.
+Use AUTOMATIC-SETUP.md and Install-CalmHome-Unattended.ps1. I authorize its documented automatic scope on this explicit target without asking for confirmation before each step. Verify model MIBOX4, API 28, user 0 and APK SHA-256 93AC9375760F9E6BE9D990343FA500614725FE5994C6EAA9A36034C004C65ABD. Use version 1.2-choose-apps (versionCode 3); do not substitute an unreviewed APK or guess around an unexpected configuration.
 
 Run the installer with -CloseWifiDebugging. Walk me through the TV's initial debugging authorization and wait for acceptance; do not bypass Android/Play Protect. Skip completed steps.
 

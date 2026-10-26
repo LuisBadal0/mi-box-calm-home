@@ -30,7 +30,7 @@ pwsh -NoProfile -File .\Install-CalmHome-Unattended.ps1 -TvIp 192.168.1.20 -Clos
 
 1. Check the model/API/current user, original Home, protected packages and original settings. Stop on Projectivy, unexpected Home, unsupported models or a different existing Calm Home build.
 2. Create a separate journal, original settings/package snapshots, English app inventory and initial memory reading. Unknown apps are kept enabled. Save readable installed APKs and their checksums/error records before setup changes; this can take several minutes.
-3. Install version **1.1-most-used** (`com.luisbadalo.calmhome`) if absent. Skip installation when the same reviewed build is already enabled.
+3. Install version **1.2-choose-apps** (`com.luisbadalo.calmhome`) if absent. Skip installation when the same reviewed build is already enabled.
 4. Enable **Usage Access** for Calm Home using `appops set --user 0 com.luisbadalo.calmhome GET_USAGE_STATS allow`, unless already allowed. Record the original mode and exact undo command. This is the only new special access; accessibility/device-admin are not granted. Verify the mode before replacing Home.
 5. Open Calm Home and verify the real foreground, clock, Play Store, Settings and All apps (Definições and Todas as apps on a Portuguese TV); save a screenshot. The installer passes no app list: the row starts in the automatic most-used mode, and the viewer can later pick their own apps on the TV with Choose apps.
 6. Disable only exact Xiaomi analytics (`com.miui.tv.analytics`) if present/enabled.
@@ -60,6 +60,6 @@ Re-enable/open/verify the original Home before disabling Calm Home. Keep each bo
 
 With `-CloseWifiDebugging`, the installer switches ADB to USB mode after all checks succeed and checks the wireless port is closed. USB debugging and previous authorizations are not revoked. Re-enable debugging on the TV for later network management.
 
-Version 1.1 was built and signature/alignment checked, and its ranking/installer paths were checked locally. The new ranking/Usage Access flow has not yet been exercised on a physical TV. No tests or device logs are included in this repository.
+Version 1.2 was built, signed and signature/alignment checked, and its ranking policy was checked locally. Choose apps, the Portuguese labels and the aggregated usage window have not yet been exercised on a physical TV. No tests or device logs are included in this repository.
 
 For an agent prompt that authorizes this same scope, use [REPLICATE-NO-PROMPTS.md](REPLICATE-NO-PROMPTS.md).

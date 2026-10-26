@@ -26,7 +26,7 @@ $script:Package = 'com.luisbadalo.calmhome'
 $script:Stock = 'com.google.android.tvlauncher'
 $script:Analytics = 'com.miui.tv.analytics'
 $script:HomeComponent = "$($script:Package)/.MainActivity"
-$expectedHash = 'A5F9826B19B0CC0A538247BCC9233148A7610A7A75ACC5DC7C71380B8D5F2B3B'
+$expectedHash = '93AC9375760F9E6BE9D990343FA500614725FE5994C6EAA9A36034C004C65ABD'
 if (-not $AdbPath) {
     foreach ($candidate in @('platform-tools\adb.exe','tools\platform-tools\adb.exe')) {
         $candidatePath = Join-Path $PSScriptRoot $candidate
