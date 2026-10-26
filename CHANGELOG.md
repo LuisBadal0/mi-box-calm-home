@@ -1,5 +1,9 @@
 # Release notes
 
+## 1.2.1 (installer fix, 26 October 2026; APK unchanged, still 1.2-choose-apps versionCode 3)
+
+- The installer now reads adb output as UTF-8. Before, on a Windows console using a code page such as 850, the Portuguese "Definições" label was garbled, so the UI check failed and setup stopped before replacing Home on a Portuguese TV. Validation: offline installer scenarios, including a Portuguese TV, under code pages 65001 and 850.
+
 ## 1.2-choose-apps (versionCode 3, 26 October 2026)
 
 - Added a **Choose apps** tile and dialog: keep **Most-used apps (automatic)** or pick up to six installed apps with **Apps I choose**. Chosen apps keep the order they were picked; missing ones are skipped, not replaced. Switching modes keeps the previous selection.
